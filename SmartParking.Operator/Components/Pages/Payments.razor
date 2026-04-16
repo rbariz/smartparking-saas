@@ -1,0 +1,266 @@
+﻿@page "/payments"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+@inject PaymentsAdminApiClient PaymentsApi
+@inject NavigationManager Nav
+
+<PageTitle>Payments</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div class="toolbar">
+        <div>
+            <div class="page-title">Payments</div>
+            <div class="page-subtitle">Monitor payment status and linked bookings.</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="refresh-badge @(IsRefreshing ? "loading" : "")">
+                @(IsRefreshing ? "Refreshing..." : $"Last refresh: {LastRefreshText}")
+            </div>
+
+            <button class="action-btn-secondary"
+                    @onclick="RefreshNowAsync"
+                    disabled="@IsRefreshing">
+                Refresh now
+            </button>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading payments...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Filters</div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Search Payment Id</label>
+                    <input class="filter-input"
+                           @bind="SearchText" @bind:after="SyncFiltersToUrlAsync"
+                           @bind:event="oninput" 
+                           placeholder="Type payment id..." />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" @bind="SelectedStatus" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-count">
+                @FilteredItems.Count payment(s)
+            </div>
+
+            <div class="table-wrap">
+                <table class="sp-table">
+                    <thead>
+                        <tr>
+                            <th>Payment Id</th>
+                            <th>Booking Id</th>
+                            <th>Status</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Provider Ref</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in FilteredItems)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@($"/payments/{item.Id}")">@item.Id</a>
+                                </td>
+                                <td>
+                                    <a href="@($"/bookings/{item.BookingId}")">@item.BookingId</a>
+                                </td>
+                                <td>
+                                    <StatusBadge Text="@item.Status" />
+                                </td>
+                                <td>@item.Method</td>
+                                <td>@item.Amount @item.Currency</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.ProviderReference) ? "-" : item.ProviderReference)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? SearchQuery { get; set; }
+
+    private List<PaymentResponse> Items = [];
+    private bool IsLoading = true;
+    private bool IsRefreshing;
+    private string? Error;
+
+    private string SearchText = string.Empty;
+    private string SelectedStatus = string.Empty;
+
+    private DateTime? LastRefreshUtc;
+
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+    private Task? _refreshLoopTask;
+
+    private string LastRefreshText =>
+        LastRefreshUtc?.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss") ?? "-";
+
+    private List<PaymentResponse> FilteredItems => ApplyFilters();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPaymentsAsync(initialLoad: true);
+
+        _cts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        _refreshLoopTask = RunRefreshLoopAsync(_cts.Token);
+    }
+
+    private async Task LoadPaymentsAsync(bool initialLoad = false)
+    {
+        try
+        {
+            if (initialLoad)
+            {
+                IsLoading = true;
+                ApplyQueryFilters();
+            }
+            else
+            {
+                IsRefreshing = true;
+            }
+
+            Error = null;
+
+            var result = await PaymentsApi.GetAllAsync();
+            Items = result.ToList();
+            LastRefreshUtc = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            if (initialLoad)
+            {
+                IsLoading = false;
+            }
+
+            IsRefreshing = false;
+        }
+    }
+
+    private void ApplyQueryFilters()
+    {
+        if (!string.IsNullOrWhiteSpace(StatusQuery))
+            SelectedStatus = StatusQuery;
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            SearchText = SearchQuery;
+    }
+
+    private List<PaymentResponse> ApplyFilters()
+    {
+        IEnumerable<PaymentResponse> query = Items;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            query = query.Where(x =>
+                x.Id.ToString().Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+        {
+            query = query.Where(x => x.Status == SelectedStatus);
+        }
+
+        return query
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .ToList();
+    }
+
+    private async Task RefreshNowAsync()
+    {
+        await LoadPaymentsAsync();
+        StateHasChanged();
+    }
+
+    private async Task RunRefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        if (_timer is null)
+            return;
+
+        try
+        {
+            while (await _timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadPaymentsAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            _cts?.Cancel();
+
+            if (_refreshLoopTask is not null)
+            {
+                await _refreshLoopTask;
+            }
+        }
+        catch
+        {
+        }
+        finally
+        {
+            _timer?.Dispose();
+            _cts?.Dispose();
+        }
+    }
+    private async Task SyncFiltersToUrlAsync()
+    {
+        var query = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+            query.Add($"q={Uri.EscapeDataString(SearchText)}");
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+            query.Add($"status={Uri.EscapeDataString(SelectedStatus)}");
+
+        var uri = "/payments";
+        if (query.Count > 0)
+            uri += "?" + string.Join("&", query);
+
+        await InvokeAsync(() => Nav.NavigateTo(uri, replace: true));
+    }
+}

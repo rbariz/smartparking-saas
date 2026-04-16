@@ -1,0 +1,87 @@
+﻿@page "/booking/{BookingId:guid}"
+
+
+@inject BookingsApiClient BookingsApi
+@inject PaymentsApiClient PaymentsApi
+@inject NavigationManager Nav
+
+
+
+
+<PageHeader Title="Booking"
+            Subtitle="Complete your payment to confirm your spot." ShowBackButton="true" />
+
+@if (IsLoading)
+{
+    <div class="card">Loading booking...</div>
+}
+else if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="error-banner">@Error</div>
+}
+else if (Booking is null)
+{
+    <div class="empty-state">Booking not found.</div>
+}
+else
+{
+    <BookingSummaryCard Booking="Booking" />
+
+    <PrimaryButton Text="Pay Now"
+                   Disabled="@IsPaying"
+                   OnClick="PayAsync" />
+}
+
+@code {
+    [Parameter] public Guid BookingId { get; set; }
+
+    private BookingResponse? Booking;
+    private bool IsLoading = true;
+    private bool IsPaying;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Booking = await BookingsApi.GetByIdAsync(BookingId);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task PayAsync()
+    {
+        try
+        {
+            Error = null;
+            IsPaying = true;
+
+            var payment = await PaymentsApi.CreateAsync(
+                BookingId,
+                new PaymentCreateRequest("card"));
+
+            if (payment is null)
+            {
+                Error = "Payment creation failed.";
+                return;
+            }
+
+            Nav.NavigateTo($"/payment/{payment.Id}");
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsPaying = false;
+        }
+    }
+}

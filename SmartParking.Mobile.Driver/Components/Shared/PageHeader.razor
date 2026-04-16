@@ -1,0 +1,26 @@
+﻿@inject NavigationManager Nav
+
+<div class="page-header">
+    @if (ShowBackButton)
+    {
+        <button class="back-btn" @onclick="GoBack">← Back</button>
+    }
+
+    <h1 class="page-title">@Title</h1>
+
+    @if (!string.IsNullOrWhiteSpace(Subtitle))
+    {
+        <div class="page-subtitle">@Subtitle</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public bool ShowBackButton { get; set; } = true;
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("javascript:history.back()");
+    }
+}

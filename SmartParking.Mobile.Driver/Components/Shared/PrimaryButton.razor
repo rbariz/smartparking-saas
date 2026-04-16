@@ -1,0 +1,17 @@
+﻿<button class="@CssClass" @onclick="OnClick" disabled="@Disabled">
+    @Text
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Continue";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Variant { get; set; } = "primary";
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private string CssClass => Variant switch
+    {
+        "secondary" => "btn btn-secondary",
+        "success" => "btn btn-success",
+        _ => "btn btn-primary"
+    };
+}

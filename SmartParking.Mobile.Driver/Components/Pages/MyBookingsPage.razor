@@ -1,0 +1,129 @@
+﻿@page "/bookings"
+
+@inject BookingsApiClient BookingsApi
+@inject DriverSession DriverSession
+@inject NavigationManager Nav
+
+<PageHeader Title="My Bookings"
+            Subtitle="Track your reservations and continue pending payments." ShowBackButton="true" />
+
+@if (IsLoading)
+{
+    <div class="card">Loading bookings...</div>
+}
+else if (!string.IsNullOrWhiteSpace(Error))
+{
+    <ErrorBanner Message="@Error" />
+}
+else if (Items.Count == 0)
+{
+    <EmptyState Title="No bookings yet"
+                Message="Your reservations will appear here." />
+}
+else
+{
+    @foreach (var item in Items)
+    {
+        <div class="card">
+            <div class="stack-sm">
+                <div class="card-title">@item.ParkingName</div>
+                <StatusBadge Text="@item.Status" />
+                @if (!string.IsNullOrWhiteSpace(item.PaymentStatus))
+                {
+                    <div style="margin-top:6px;">
+                        <span class="muted">Payment:</span>
+                        <StatusBadge Text="@item.PaymentStatus" />
+                    </div>
+                }
+            </div>
+
+            <div class="meta-grid">
+                <div class="meta-box">
+                    <div class="meta-label">Start</div>
+                    <div class="meta-value">@UiFormatters.DateTimeShort(item.StartTime)</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">End</div>
+                    <div class="meta-value">@UiFormatters.DateTimeShort(item.EndTime)</div>
+                </div>
+
+                <div class="meta-box" style="grid-column: 1 / -1;">
+                    <div class="meta-label">Price</div>
+                    <div class="meta-value">@UiFormatters.Money(item.ReservedPrice, item.PriceCurrency)</div>
+                </div>
+            </div>
+
+            <div style="margin-top:14px;" class="stack-sm">
+                @if (item.Status == "pending_payment" && item.PaymentId is null)
+                {
+                    <PrimaryButton Text="Pay Now"
+                                   OnClick="@(() => GoToBooking(item.Id))" />
+                }
+                else if (item.Status == "pending_payment" && item.PaymentId is not null && item.PaymentStatus == "pending")
+                {
+                    <PrimaryButton Text="Confirm Payment"
+                                   Variant="success"
+                                   OnClick="@(() => GoToPayment(item.PaymentId!.Value))" />
+                }
+                else
+                {
+                    <PrimaryButton Text="View Booking"
+                                   Variant="secondary"
+                                   OnClick="@(() => GoToBookingDetails(item.Id))" />
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<DriverBookingListItemResponse> Items = [];
+    private bool IsLoading = true;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            Error = null;
+
+            if (DriverSession.DriverId == Guid.Empty)
+            {
+                Error = "DriverId is not configured.";
+                return;
+            }
+
+            var result = await BookingsApi.GetDriverBookingsAsync(DriverSession.DriverId);
+            Items = result.ToList();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void GoToBooking(Guid bookingId)
+    {
+        Nav.NavigateTo($"/booking/{bookingId}");
+    }
+    private void GoToPayment(Guid paymentId)
+    {
+        Nav.NavigateTo($"/payment/{paymentId}");
+    }
+
+    private void GoToBookingDetails(Guid bookingId)
+    {
+        Nav.NavigateTo($"/booking-details/{bookingId}");
+    }
+}

@@ -1,0 +1,114 @@
+﻿@page "/payment/{PaymentId:guid}"
+
+@inject PaymentsApiClient PaymentsApi
+@inject BookingsApiClient BookingsApi
+@inject NavigationManager Nav
+
+
+<PageHeader Title="Payment"
+            Subtitle="Confirm your payment to secure your booking." ShowBackButton="true" />
+
+@if (IsLoading)
+{
+    <div class="card">Loading payment...</div>
+}
+else if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="error-banner">@Error</div>
+}
+else if (Payment is null)
+{
+    <div class="empty-state">Payment not found.</div>
+}
+else
+{
+    <PaymentSummaryCard Payment="Payment" />
+
+    @if (Booking is not null)
+    {
+        <BookingSummaryCard Booking="Booking" />
+    }
+
+    @if (Payment.Status == "pending")
+    {
+        <PrimaryButton Text="Confirm Payment"
+                       Variant="success"
+                       Disabled="@IsConfirming"
+                       OnClick="ConfirmAsync" />
+    }
+    else
+    {
+        <PrimaryButton Text="View My Bookings"
+                       OnClick="GoToBookings" />
+    }
+}
+
+@code {
+    [Parameter] public Guid PaymentId { get; set; }
+
+    private PaymentResponse? Payment;
+    private BookingResponse? Booking;
+    private bool IsLoading = true;
+    private bool IsConfirming;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            Error = null;
+            Payment = await PaymentsApi.GetByIdAsync(PaymentId);
+
+            if (Payment is not null)
+            {
+                Booking = await BookingsApi.GetByIdAsync(Payment.BookingId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ConfirmAsync()
+    {
+        try
+        {
+            Error = null;
+            IsConfirming = true;
+
+            var confirmed = await PaymentsApi.ConfirmAsync(
+                PaymentId,
+                new PaymentConfirmRequest("TEST-PAY-001"));
+
+            Payment = confirmed;
+
+            if (Payment is not null)
+            {
+                Booking = await BookingsApi.GetByIdAsync(Payment.BookingId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsConfirming = false;
+        }
+    }
+
+    private void GoToBookings()
+    {
+        Nav.NavigateTo("/bookings");
+    }
+}

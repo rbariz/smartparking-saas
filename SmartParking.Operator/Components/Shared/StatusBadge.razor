@@ -1,0 +1,24 @@
+﻿<span class="@CssClass">@Label</span>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+
+    private string CssClass => Text switch
+    {
+        "open" => "badge badge-open",
+        "confirmed" => "badge badge-confirmed",
+        "paid" => "badge badge-paid",
+        "completed" => "badge badge-completed",
+        "pending" => "badge badge-pending",
+        "pending_payment" => "badge badge-pending-payment",
+        "active" => "badge badge-active",
+        "closed" => "badge badge-closed",
+        "expired" => "badge badge-expired",
+        "cancelled" => "badge badge-cancelled",
+        "failed" => "badge badge-failed",
+        "full" => "badge badge-full",
+        _ => "badge"
+    };
+
+    private string Label => Text.Replace("_", " ");
+}

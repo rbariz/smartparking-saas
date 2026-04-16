@@ -1,0 +1,164 @@
+﻿@page "/results"
+
+@inject ParkingsApiClient ParkingsApi
+@inject SearchState SearchState
+@inject NavigationManager Nav
+
+<PageHeader Title="Available Parking"
+            Subtitle="Find the best option for your trip." ShowBackButton="true" />
+
+<div class="toggle-group">
+    <div class="toggle @(SortMode == "distance" ? "toggle-active" : "")"
+         @onclick="() => SetSort(ldistance)">
+        Distance
+    </div>
+
+    <div class="toggle @(SortMode == "price" ? "toggle-active" : "")"
+         @onclick="() => SetSort(lprice)">
+        Price
+    </div>
+</div>
+
+<div class="toggle-group">
+    <div class="toggle @(OpenOnly ? "toggle-active" : "")"
+         @onclick="ToggleOpenOnly">
+        Open only
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <div class="card">Loading...</div>
+}
+else if (!string.IsNullOrWhiteSpace(Error))
+{
+    <ErrorBanner Message="@Error" />
+}
+else if (FilteredItems.Count == 0)
+{
+    <EmptyState Title="No results"
+                Message="Try adjusting your filters." />
+}
+else
+{
+    @foreach (var item in FilteredItems)
+    {
+        <ParkingCard Item="item" OnView="GoToDetails" />
+    }
+}
+
+
+@code {
+    
+    private string lprice = "price";
+    private string ldistance = "distance";
+
+    private bool IsLoading = true;
+    private string? Error;
+
+    private List<ParkingSearchListItemVm> AllItems = [];
+    private List<ParkingSearchListItemVm> FilteredItems = [];
+
+    private string SortMode = "distance";
+    private bool OpenOnly = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var request = new ParkingSearchRequest(
+                SearchState.Latitude,
+                        SearchState.Longitude,
+                        SearchState.RadiusMeters,
+                        SearchState.StartTime,
+                        SearchState.EndTime,
+                        OpenOnly,
+                        SortMode);
+
+            var result = await ParkingsApi.SearchAsync(request);
+
+            AllItems = result
+    .Select(x => new ParkingSearchListItemVm
+    {
+        ParkingId = x.ParkingId,
+        Name = x.Name,
+        Address = x.Address,
+        Status = x.Status,
+        AvailableCount = x.AvailableCount,
+        TotalCapacity = x.TotalCapacity,
+        HourlyRate = x.HourlyRate,
+        Currency = x.Currency,
+        EstimatedPrice = x.EstimatedPrice,
+        DistanceKm = x.DistanceMeters / 1000.0,
+        DistanceLabel = UiFormatters.DistanceFromMeters(x.DistanceMeters)
+    })
+    .ToList();
+
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void SetSort(string mode)
+    {
+        SortMode = mode;
+        ApplyFilters();
+    }
+
+    private void ToggleOpenOnly()
+    {
+        OpenOnly = !OpenOnly;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var items = AllItems.AsEnumerable();
+
+        if (OpenOnly)
+        {
+            items = items.Where(x => x.Status == "open");
+        }
+
+        items = SortMode switch
+        {
+            "price" => items.OrderBy(x => x.EstimatedPrice),
+            _ => items.OrderBy(x => x.DistanceKm)
+        };
+
+        var list = items.ToList();
+
+        // Reset highlights
+        foreach (var item in list)
+        {
+            item.IsBestOption = false;
+            item.IsCheapest = false;
+        }
+
+        if (list.Count > 0)
+        {
+            list[0].IsBestOption = true;
+
+            var cheapest = list.OrderBy(x => x.EstimatedPrice).FirstOrDefault();
+            if (cheapest != null)
+            {
+                cheapest.IsCheapest = true;
+            }
+        }
+
+        FilteredItems = list;
+        StateHasChanged();
+    }
+
+    private void GoToDetails(Guid parkingId)
+    {
+        Nav.NavigateTo($"/parking/{parkingId}");
+    }
+}

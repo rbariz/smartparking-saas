@@ -1,0 +1,83 @@
+﻿@page "/booking-details/{BookingId:guid}"
+
+@inject BookingsApiClient BookingsApi
+@inject NavigationManager Nav
+
+<PageHeader Title="Booking Details"
+            Subtitle="Track the status of your reservation."
+            ShowBackButton="true" />
+
+<ErrorBanner Message="@Error" />
+
+@if (IsLoading)
+{
+    <div class="card">Loading booking...</div>
+}
+else if (Booking is null)
+{
+    <EmptyState Title="Booking not found"
+                Message="We could not load this booking." />
+}
+else
+{
+    <BookingSummaryCard Booking="Booking" />
+
+    <div class="card">
+        <div class="card-title">Status</div>
+        <div class="section">
+            <StatusBadge Text="@Booking.Status" />
+        </div>
+
+        <div class="muted">
+            Booking reference: @Booking.Id
+        </div>
+    </div>
+
+    <div class="stack-sm">
+        @if (Booking.Status == "pending_payment")
+        {
+            <PrimaryButton Text="Continue Payment"
+                           OnClick="GoToPendingBooking" />
+        }
+        else
+        {
+            <PrimaryButton Text="Back to My Bookings"
+                           Variant="secondary"
+                           OnClick="GoToBookings" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public Guid BookingId { get; set; }
+
+    private BookingResponse? Booking;
+    private bool IsLoading = true;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Booking = await BookingsApi.GetByIdAsync(BookingId);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void GoToPendingBooking()
+    {
+        Nav.NavigateTo($"/booking/{BookingId}");
+    }
+
+    private void GoToBookings()
+    {
+        Nav.NavigateTo("/bookings");
+    }
+}

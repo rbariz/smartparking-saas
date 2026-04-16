@@ -1,0 +1,333 @@
+﻿@page "/"
+@page "/dashboard"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+@inject DashboardService DashboardService
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div class="toolbar">
+        <div>
+            <div class="page-title">Dashboard</div>
+            <div class="page-subtitle">Operational snapshot of parking capacity, bookings, and payments.</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="refresh-badge @(IsRefreshing ? "loading" : "")">
+                @(IsRefreshing ? "Refreshing..." : $"Last refresh: {LastRefreshText}")
+            </div>
+
+            <button class="action-btn-secondary"
+                    @onclick="RefreshNowAsync"
+                    disabled="@IsRefreshing">
+                Refresh now
+            </button>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading dashboard...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else if (Vm is not null)
+    {
+
+        <div class="kpi-grid">
+            <a class="card-link" href="/parkings">
+                <div class="kpi-card kpi-accent">
+                    <div class="kpi-label">Total Parkings</div>
+                    <div class="kpi-value">@Vm.TotalParkings</div>
+                </div>
+            </a>
+
+            <a class="card-link" href="/parkings?status=open">
+                <div class="kpi-card kpi-success">
+                    <div class="kpi-label">Available Spots</div>
+                    <div class="kpi-value">@Vm.AvailableSpots</div>
+                </div>
+            </a>
+
+            <a class="card-link" href="/parkings?status=full">
+                <div class="kpi-card kpi-warning">
+                    <div class="kpi-label">Occupied Spots</div>
+                    <div class="kpi-value">@Vm.OccupiedSpots</div>
+                </div>
+            </a>
+
+            <a class="card-link" href="/parkings?status=full">
+                <div class="kpi-card kpi-danger">
+                    <div class="kpi-label">Occupancy Rate</div>
+                    <div class="kpi-value">@Vm.OccupancyRatePercent%</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Quick Actions</div>
+
+            <div class="quick-actions-grid">
+                <a class="quick-action-card" href="/parkings?status=full">
+                    <div class="quick-action-title">Full Parkings</div>
+                    <div class="quick-action-subtitle">@Vm.FullParkings parking(s) currently full</div>
+                </a>
+
+                <a class="quick-action-card" href="/parkings?status=closed">
+                    <div class="quick-action-title">Closed Parkings</div>
+                    <div class="quick-action-subtitle">@Vm.ClosedParkings parking(s) currently closed</div>
+                </a>
+
+                <a class="quick-action-card" href="/bookings?status=pending_payment">
+                    <div class="quick-action-title">Pending Payment Bookings</div>
+                    <div class="quick-action-subtitle">@Vm.PendingPaymentBookings booking(s) need payment follow-up</div>
+                </a>
+
+                <a class="quick-action-card" href="/payments?status=pending">
+                    <div class="quick-action-title">Pending Payments</div>
+                    <div class="quick-action-subtitle">@Vm.PendingPayments payment(s) still awaiting confirmation</div>
+                </a>
+            </div>
+        </div>
+
+        @if (Vm.HasFullParkings || Vm.HasPendingPaymentBookings || Vm.HasPendingPayments || Vm.HasClosedParkings)
+        {
+            <div class="panel">
+                <div class="panel-title">Attention Needed</div>
+
+                <div class="alert-list">
+                    @if (Vm.HasFullParkings)
+                    {
+                        <div class="alert-item">@Vm.FullParkings parking(s) are full.</div>
+                    }
+
+                    @if (Vm.HasClosedParkings)
+                    {
+                        <div class="alert-item">@Vm.ClosedParkings parking(s) are closed.</div>
+                    }
+
+                    @if (Vm.HasPendingPaymentBookings)
+                    {
+                        <div class="alert-item">@Vm.PendingPaymentBookings booking(s) are waiting for payment.</div>
+                    }
+
+                    @if (Vm.HasPendingPayments)
+                    {
+                        <div class="alert-item">@Vm.PendingPayments payment(s) are still pending.</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="two-col-grid">
+            <div class="panel">
+                <div class="panel-title">Bookings Overview</div>
+
+                <div class="kpi-grid">
+                    <a class="card-link" href="/bookings?status=active">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Active Bookings</div>
+                            <div class="kpi-value-sm">@Vm.ActiveBookings</div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="/bookings?status=completed">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Completed Bookings</div>
+                            <div class="kpi-value-sm">@Vm.CompletedBookings</div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="/bookings?status=pending_payment">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Pending Payment Bookings</div>
+                            <div class="kpi-value-sm">@Vm.PendingPaymentBookings</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Parkings Overview</div>
+
+                <div class="stack-md">
+                    <a class="card-link" href="/parkings?status=open">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Open Parkings</div>
+                            <div class="kpi-value-sm">@Vm.OpenParkings</div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="/parkings?status=closed">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Closed Parkings</div>
+                            <div class="kpi-value-sm">@Vm.ClosedParkings</div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="/parkings?status=full">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Full Parkings</div>
+                            <div class="kpi-value-sm">@Vm.FullParkings</div>
+                        </div>
+                    </a>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Capacity</div>
+                        <div class="kpi-value-sm">@Vm.TotalCapacity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Payments Overview</div>
+
+            <div class="kpi-grid">
+                <a class="card-link" href="/payments">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Payments</div>
+                        <div class="kpi-value-sm">@Vm.TotalPayments</div>
+                    </div>
+                </a>
+
+                <a class="card-link" href="/payments?status=paid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Paid Payments</div>
+                        <div class="kpi-value-sm">@Vm.PaidPayments</div>
+                    </div>
+                </a>
+
+                <a class="card-link" href="/payments?status=pending">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Pending Payments</div>
+                        <div class="kpi-value-sm">@Vm.PendingPayments</div>
+                    </div>
+                </a>
+
+                <a class="card-link" href="/payments?status=paid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Paid Amount</div>
+                        <div class="kpi-value-sm">@Vm.TotalPaidAmount.ToString("0.##")</div>
+                    </div>
+                </a>
+
+                <a class="card-link" href="/payments?status=pending">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Pending Amount</div>
+                        <div class="kpi-value-sm">@Vm.TotalPendingAmount.ToString("0.##")</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DashboardVm? Vm;
+    private bool IsLoading = true;
+    private string? Error;
+    private DateTime? LastRefreshUtc;
+
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+    private Task? _refreshLoopTask;
+
+    private bool IsRefreshing;
+
+    private string LastRefreshText =>
+        LastRefreshUtc?.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss") ?? "-";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardAsync(initialLoad: true);
+
+        _cts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        _refreshLoopTask = RunRefreshLoopAsync(_cts.Token);
+    }
+
+    private async Task LoadDashboardAsync(bool initialLoad = false)
+    {
+        try
+        {
+            if (initialLoad)
+            {
+                IsLoading = true;
+            }
+            else
+            {
+                IsRefreshing = true;
+            }
+
+            Error = null;
+            Vm = await DashboardService.GetAsync();
+            LastRefreshUtc = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            if (initialLoad)
+            {
+                IsLoading = false;
+            }
+
+            IsRefreshing = false;
+        }
+    }
+
+    private async Task RefreshNowAsync()
+    {
+        await LoadDashboardAsync();
+        StateHasChanged();
+    }
+
+    private async Task RunRefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        if (_timer is null)
+            return;
+
+        try
+        {
+            while (await _timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadDashboardAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            _cts?.Cancel();
+
+            if (_refreshLoopTask is not null)
+            {
+                await _refreshLoopTask;
+            }
+        }
+        catch
+        {
+        }
+        finally
+        {
+            _timer?.Dispose();
+            _cts?.Dispose();
+        }
+    }
+}

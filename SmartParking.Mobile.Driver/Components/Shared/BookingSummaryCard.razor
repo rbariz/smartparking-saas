@@ -1,0 +1,34 @@
+﻿<div class="card">
+    <div class="card-title">Booking Summary</div>
+
+    <div class="section">
+        <StatusBadge Text="@Booking.Status" />
+    </div>
+
+    <div class="meta-grid">
+        <div class="meta-box">
+            <div class="meta-label">Start</div>
+            <div class="meta-value">@UiFormatters.DateTimeShort(Booking.StartTime)</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">End</div>
+            <div class="meta-value">@UiFormatters.DateTimeShort(Booking.EndTime)</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">Expires</div>
+            <div class="meta-value">@UiFormatters.DateTimeShort(Booking.ExpiresAtUtc)</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">Price</div>
+            <div class="meta-value">@UiFormatters.Money(Booking.ReservedPrice, Booking.PriceCurrency)</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SmartParking.Contracts.Bookings.BookingResponse Booking { get; set; } = default!;
+}

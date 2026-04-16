@@ -1,0 +1,241 @@
+﻿@page "/parkings"
+@rendermode InteractiveServer
+
+@inject ParkingsAdminApiClient ParkingsApi
+@inject NavigationManager Nav
+
+<PageTitle>Parkings</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div>
+        <div class="page-title">Parkings</div>
+        <div class="page-subtitle">Monitor status, capacity, and availability across your parking inventory.</div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading parkings...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Filters</div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <input class="filter-input"
+                           @bind="SearchText" @bind:after="SyncFiltersToUrlAsync"
+                           @bind:event="oninput"
+                           placeholder="Name or address..." />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" @bind="SelectedStatus" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="">All</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                        <option value="full">Full</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select class="filter-select" @bind="SortBy" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="name_asc">Name A-Z</option>
+                        <option value="name_desc">Name Z-A</option>
+                        <option value="available_desc">Available ↓</option>
+                        <option value="available_asc">Available ↑</option>
+                        <option value="capacity_desc">Capacity ↓</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Quick Filter</label>
+                    <select class="filter-select" @bind="FullOnlyValue" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="all">All parkings</option>
+                        <option value="full">Full only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-count">
+                @FilteredItems.Count parking(s)
+            </div>
+
+            <div class="table-wrap">
+                <table class="sp-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Available</th>
+                            <th>Capacity</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in FilteredItems)
+                        {
+                            <tr>
+                                <td>
+                                    <div>
+                                        <a href="@($"/parkings/{item.Id}")"><strong>@item.Name</strong></a>
+                                    </div>
+                                    <div class="muted">@item.Address</div>
+                                </td>
+                                <td>
+                                    <StatusBadge Text="@ResolveStatus(item)" />
+                                </td>
+                                <td>@item.AvailableCount</td>
+                                <td>@item.TotalCapacity</td>
+                                <td>@item.HourlyRate @item.Currency</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusQuery { get; set; }
+
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? SearchQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sort")]
+    public string? SortQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "fullOnly")]
+    public string? FullOnlyQuery { get; set; }
+
+    private List<ParkingResponse> Items = [];
+    private bool IsLoading = true;
+    private string? Error;
+
+    private string SearchText = string.Empty;
+    private string SelectedStatus = string.Empty;
+    private string SortBy = "name_asc";
+    private string FullOnlyValue = "all";
+
+    private List<ParkingResponse> FilteredItems => ApplyFilters();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ApplyQueryFilters();
+            var result = await ParkingsApi.GetAllAsync();
+            Items = result.ToList();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private List<ParkingResponse> ApplyFilters()
+    {
+        IEnumerable<ParkingResponse> query = Items;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            query = query.Where(x =>
+                x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                x.Address.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (FullOnlyValue == "full")
+        {
+            query = query.Where(x => x.AvailableCount == 0);
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+        {
+            query = SelectedStatus switch
+            {
+                "full" => query.Where(x => x.AvailableCount == 0),
+                _ => query.Where(x => x.Status == SelectedStatus)
+            };
+        }
+
+        query = SortBy switch
+        {
+            "name_desc" => query.OrderByDescending(x => x.Name),
+            "available_desc" => query.OrderByDescending(x => x.AvailableCount),
+            "available_asc" => query.OrderBy(x => x.AvailableCount),
+            "capacity_desc" => query.OrderByDescending(x => x.TotalCapacity),
+            _ => query.OrderBy(x => x.Name)
+        };
+
+        return query.ToList();
+    }
+
+    private static string ResolveStatus(ParkingResponse item)
+    {
+        if (item.AvailableCount == 0)
+            return "full";
+
+        return item.Status;
+    }
+
+    private void ApplyQueryFilters()
+    {
+        if (!string.IsNullOrWhiteSpace(StatusQuery))
+        {
+            if (StatusQuery == "full")
+            {
+                SelectedStatus = "full";
+                FullOnlyValue = "full";
+            }
+            else
+            {
+                SelectedStatus = StatusQuery;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            SearchText = SearchQuery;
+
+        if (!string.IsNullOrWhiteSpace(SortQuery))
+            SortBy = SortQuery;
+
+        if (!string.IsNullOrWhiteSpace(FullOnlyQuery))
+            FullOnlyValue = FullOnlyQuery;
+    }
+    private async Task SyncFiltersToUrlAsync()
+    {
+        var query = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+            query.Add($"q={Uri.EscapeDataString(SearchText)}");
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+            query.Add($"status={Uri.EscapeDataString(SelectedStatus)}");
+
+        if (!string.IsNullOrWhiteSpace(SortBy))
+            query.Add($"sort={Uri.EscapeDataString(SortBy)}");
+
+        if (!string.IsNullOrWhiteSpace(FullOnlyValue) && FullOnlyValue != "all")
+            query.Add($"fullOnly={Uri.EscapeDataString(FullOnlyValue)}");
+
+        var uri = "/parkings";
+        if (query.Count > 0)
+            uri += "?" + string.Join("&", query);
+
+        await InvokeAsync(() => Nav.NavigateTo(uri, replace: true));
+    }
+}

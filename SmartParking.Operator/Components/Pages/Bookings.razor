@@ -1,0 +1,423 @@
+﻿@page "/bookings"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+@inject BookingsAdminApiClient BookingsApi
+@inject NavigationManager Nav
+
+<PageTitle>Bookings</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div class="toolbar">
+        <div>
+            <div class="page-title">Bookings</div>
+            <div class="page-subtitle">Track reservations and monitor booking lifecycle status.</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="refresh-badge @(IsRefreshing ? "loading" : "")">
+                @(IsRefreshing ? "Refreshing..." : $"Last refresh: {LastRefreshText}")
+            </div>
+
+            <button class="action-btn-secondary"
+                    @onclick="RefreshNowAsync"
+                    disabled="@IsRefreshing">
+                Refresh now
+            </button>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading bookings...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Filters</div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Search Booking Id</label>
+                    <input class="filter-input"
+                           @bind="SearchText"
+                           @bind:event="oninput" @bind:after="SyncFiltersToUrlAsync"
+                           placeholder="Type booking id..." />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" @bind="SelectedStatus" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="">All</option>
+                        <option value="pending_payment">Pending Payment</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="expired">Expired</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select class="filter-select" @bind="SortBy" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="created_desc">Newest first</option>
+                        <option value="created_asc">Oldest first</option>
+                        <option value="start_asc">Start time ↑</option>
+                        <option value="start_desc">Start time ↓</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Parking Id</label>
+                    <input class="filter-input"
+                           @bind="ParkingIdFilter" @bind:after="SyncFiltersToUrlAsync"
+                           placeholder="Parking id..." />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Start From</label>
+                    <input class="filter-input"
+                           type="datetime-local"
+                           @bind="StartFrom" @bind:after="SyncFiltersToUrlAsync" />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Start To</label>
+                    <input class="filter-input"
+                           type="datetime-local"
+                           @bind="StartTo" @bind:after="SyncFiltersToUrlAsync" />
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Payment Status</label>
+                    <select class="filter-select" @bind="PaymentStatus" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="">All</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Quick</label>
+                    <select class="filter-select" @bind="QuickFilter" @bind:after="SyncFiltersToUrlAsync">
+                        <option value="">None</option>
+                        <option value="today">Today</option>
+                        <option value="active_now">Active Now</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-count">
+                @FilteredItems.Count booking(s)
+            </div>
+
+            <div class="table-wrap">
+                <table class="sp-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Id</th>
+                            <th>Status</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in FilteredItems)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@($"/bookings/{item.Id}")">@item.Id</a>
+                                </td>
+                                <td>
+                                    <StatusBadge Text="@item.Status" />
+                                </td>
+                                <td>@item.StartTime.ToLocalTime().ToString("dd MMM HH:mm")</td>
+                                <td>@item.EndTime.ToLocalTime().ToString("dd MMM HH:mm")</td>
+                                <td>@item.ReservedPrice @item.PriceCurrency</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? SearchQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "parkingId")]
+    public string? ParkingIdQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sort")]
+    public string? SortQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "paymentStatus")]
+    public string? PaymentStatusQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "quick")]
+    public string? QuickQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "startFrom")]
+    public DateTime? StartFromQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "startTo")]
+    public DateTime? StartToQuery { get; set; }
+
+
+    private List<BookingResponse> Items = [];
+    private bool IsLoading = true;
+    private bool IsRefreshing;
+    private string? Error;
+
+    private string SearchText = string.Empty;
+    private string SelectedStatus = string.Empty;
+    private string SortBy = "created_desc";
+
+    private string ParkingIdFilter = string.Empty;
+    private DateTime? StartFrom;
+    private DateTime? StartTo;
+    private string PaymentStatus = string.Empty;
+    private string QuickFilter = string.Empty;
+
+    private DateTime? LastRefreshUtc;
+
+    private PeriodicTimer? _timer;
+    private CancellationTokenSource? _cts;
+    private Task? _refreshLoopTask;
+
+    private string LastRefreshText =>
+        LastRefreshUtc?.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss") ?? "-";
+
+    private List<BookingResponse> FilteredItems => ApplyFilters();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBookingsAsync(initialLoad: true);
+
+        _cts = new CancellationTokenSource();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        _refreshLoopTask = RunRefreshLoopAsync(_cts.Token);
+    }
+
+    private async Task LoadBookingsAsync(bool initialLoad = false)
+    {
+        try
+        {
+            if (initialLoad)
+            {
+                IsLoading = true;
+                ApplyQueryFilters();
+            }
+            else
+            {
+                IsRefreshing = true;
+            }
+
+            Error = null;
+
+            var result = await BookingsApi.GetAllAsync();
+            Items = result.ToList();
+            LastRefreshUtc = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            if (initialLoad)
+            {
+                IsLoading = false;
+            }
+
+            IsRefreshing = false;
+        }
+    }
+
+    private void ApplyQueryFilters()
+    {
+        if (!string.IsNullOrWhiteSpace(StatusQuery))
+            SelectedStatus = StatusQuery;
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            SearchText = SearchQuery;
+
+        if (!string.IsNullOrWhiteSpace(ParkingIdQuery))
+            ParkingIdFilter = ParkingIdQuery;
+
+        if (!string.IsNullOrWhiteSpace(SortQuery))
+            SortBy = SortQuery;
+
+        if (!string.IsNullOrWhiteSpace(PaymentStatusQuery))
+            PaymentStatus = PaymentStatusQuery;
+
+        if (!string.IsNullOrWhiteSpace(QuickQuery))
+            QuickFilter = QuickQuery;
+
+        StartFrom = StartFromQuery;
+        StartTo = StartToQuery;
+    }
+
+    private List<BookingResponse> ApplyFilters()
+    {
+        IEnumerable<BookingResponse> query = Items;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            query = query.Where(x =>
+                x.Id.ToString().Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(ParkingIdFilter))
+        {
+            query = query.Where(x =>
+                x.ParkingId.ToString().Contains(ParkingIdFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+        {
+            query = query.Where(x => x.Status == SelectedStatus);
+        }
+
+        if (!string.IsNullOrWhiteSpace(PaymentStatus))
+        {
+            query = PaymentStatus switch
+            {
+                "paid" => query.Where(x => x.Status != "pending_payment"),
+                "pending" => query.Where(x => x.Status == "pending_payment"),
+                _ => query
+            };
+        }
+
+        if (StartFrom.HasValue)
+        {
+            query = query.Where(x => x.StartTime >= StartFrom.Value);
+        }
+
+        if (StartTo.HasValue)
+        {
+            query = query.Where(x => x.StartTime <= StartTo.Value);
+        }
+
+        var now = DateTime.UtcNow;
+
+        if (QuickFilter == "today")
+        {
+            var today = now.Date;
+            var tomorrow = today.AddDays(1);
+
+            query = query.Where(x =>
+                x.StartTime >= today && x.StartTime < tomorrow);
+        }
+
+        if (QuickFilter == "active_now")
+        {
+            query = query.Where(x =>
+                x.StartTime <= now && x.EndTime >= now);
+        }
+
+        query = SortBy switch
+        {
+            "created_asc" => query.OrderBy(x => x.CreatedAtUtc),
+            "start_asc" => query.OrderBy(x => x.StartTime),
+            "start_desc" => query.OrderByDescending(x => x.StartTime),
+            _ => query.OrderByDescending(x => x.CreatedAtUtc)
+        };
+
+        return query.ToList();
+    }
+
+    private async Task RefreshNowAsync()
+    {
+        await LoadBookingsAsync();
+        StateHasChanged();
+    }
+
+    private async Task RunRefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        if (_timer is null)
+            return;
+
+        try
+        {
+            while (await _timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadBookingsAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            _cts?.Cancel();
+
+            if (_refreshLoopTask is not null)
+            {
+                await _refreshLoopTask;
+            }
+        }
+        catch
+        {
+        }
+        finally
+        {
+            _timer?.Dispose();
+            _cts?.Dispose();
+        }
+    }
+
+    private async Task SyncFiltersToUrlAsync()
+    {
+        var query = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+            query.Add($"q={Uri.EscapeDataString(SearchText)}");
+
+        if (!string.IsNullOrWhiteSpace(SelectedStatus))
+            query.Add($"status={Uri.EscapeDataString(SelectedStatus)}");
+
+        if (!string.IsNullOrWhiteSpace(ParkingIdFilter))
+            query.Add($"parkingId={Uri.EscapeDataString(ParkingIdFilter)}");
+
+        if (!string.IsNullOrWhiteSpace(SortBy))
+            query.Add($"sort={Uri.EscapeDataString(SortBy)}");
+
+        if (!string.IsNullOrWhiteSpace(PaymentStatus))
+            query.Add($"paymentStatus={Uri.EscapeDataString(PaymentStatus)}");
+
+        if (!string.IsNullOrWhiteSpace(QuickFilter))
+            query.Add($"quick={Uri.EscapeDataString(QuickFilter)}");
+
+        if (StartFrom.HasValue)
+            query.Add($"startFrom={Uri.EscapeDataString(StartFrom.Value.ToString("O"))}");
+
+        if (StartTo.HasValue)
+            query.Add($"startTo={Uri.EscapeDataString(StartTo.Value.ToString("O"))}");
+
+        var uri = "/bookings";
+        if (query.Count > 0)
+            uri += "?" + string.Join("&", query);
+
+        await InvokeAsync(() => Nav.NavigateTo(uri, replace: true));
+    }
+}

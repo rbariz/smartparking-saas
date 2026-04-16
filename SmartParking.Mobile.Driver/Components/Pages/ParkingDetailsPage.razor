@@ -1,0 +1,209 @@
+﻿@page "/parking/{ParkingId:guid}"
+
+@inject ParkingsApiClient ParkingsApi
+@inject BookingsApiClient BookingsApi
+@inject SearchState SearchState
+@inject DriverSession DriverSession
+@inject NavigationManager Nav
+
+<PageHeader Title="Parking Details"
+            Subtitle="Review details and confirm your reservation."
+            ShowBackButton="true" />
+
+<ErrorBanner Message="@Error" />
+
+@if (IsLoading)
+{
+    <div class="card">Loading parking...</div>
+}
+else if (Parking is null)
+{
+    <EmptyState Title="Parking not found"
+                Message="Unable to load this parking." />
+}
+else
+{
+    <div class="card">
+        <div class="card-title">@Parking.Name</div>
+        <div class="muted">@Parking.Address</div>
+
+        <div class="section">
+            <StatusBadge Text="@Parking.Status" />
+        </div>
+
+        <div class="meta-grid">
+            <div class="meta-box">
+                <div class="meta-label">Available</div>
+                <div class="meta-value">@Parking.AvailableCount / @Parking.TotalCapacity</div>
+            </div>
+
+            <div class="meta-box">
+                <div class="meta-label">Rate</div>
+                <div class="meta-value">@Parking.HourlyRate @Parking.Currency</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Adjust Time</div>
+
+        <div class="field">
+            <label class="label">Start</label>
+            <input class="input" type="datetime-local" @bind="StartLocal" />
+        </div>
+
+        <div class="field">
+            <label class="label">End</label>
+            <input class="input" type="datetime-local" @bind="EndLocal" />
+        </div>
+
+        <PrimaryButton Text="Recalculate Quote"
+                       Variant="secondary"
+                       Disabled="@IsRecalculating"
+                       OnClick="RecalculateQuoteAsync" />
+    </div>
+
+    @if (Quote is not null)
+    {
+        <div class="card">
+            <div class="card-title">Quote</div>
+
+            <div class="meta-grid">
+                <div class="meta-box">
+                    <div class="meta-label">Start</div>
+                    <div class="meta-value">@FormatDate(SearchState.StartTime)</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">End</div>
+                    <div class="meta-value">@FormatDate(SearchState.EndTime)</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Hours</div>
+                    <div class="meta-value">@Quote.BillableHours</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Total</div>
+                    <div class="meta-value">@Quote.EstimatedPrice @Quote.Currency</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <PrimaryButton Text="Reserve Parking"
+                   Disabled="@(IsBooking || Quote is null)"
+                   OnClick="ReserveAsync" />
+}
+
+@code {
+    [Parameter] public Guid ParkingId { get; set; }
+
+    private ParkingResponse? Parking;
+    private ParkingQuoteResponse? Quote;
+    private bool IsLoading = true;
+    private bool IsBooking;
+    private bool IsRecalculating;
+    private string? Error;
+
+    private DateTime StartLocal
+    {
+        get => SearchState.StartTime.ToLocalTime();
+        set => SearchState.StartTime = value.ToUniversalTime();
+    }
+
+    private DateTime EndLocal
+    {
+        get => SearchState.EndTime.ToLocalTime();
+        set => SearchState.EndTime = value.ToUniversalTime();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Parking = await ParkingsApi.GetByIdAsync(ParkingId);
+            await RecalculateQuoteAsync();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RecalculateQuoteAsync()
+    {
+        try
+        {
+            Error = null;
+            IsRecalculating = true;
+
+            if (SearchState.EndTime <= SearchState.StartTime)
+            {
+                Error = "End time must be greater than start time.";
+                Quote = null;
+                return;
+            }
+
+            Quote = await ParkingsApi.GetQuoteAsync(
+                ParkingId,
+                SearchState.StartTime,
+                SearchState.EndTime);
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+            Quote = null;
+        }
+        finally
+        {
+            IsRecalculating = false;
+        }
+    }
+
+    private async Task ReserveAsync()
+    {
+        try
+        {
+            Error = null;
+            IsBooking = true;
+
+            if (DriverSession.DriverId == Guid.Empty)
+            {
+                Error = "DriverId is not configured yet.";
+                return;
+            }
+
+            var booking = await BookingsApi.CreateAsync(
+                new BookingCreateRequest(
+                    DriverSession.DriverId,
+                    ParkingId,
+                    SearchState.StartTime,
+                    SearchState.EndTime));
+
+            if (booking is null)
+            {
+                Error = "Booking creation failed.";
+                return;
+            }
+
+            Nav.NavigateTo($"/booking/{booking.Id}");
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsBooking = false;
+        }
+    }
+
+    private string FormatDate(DateTime dt)
+        => dt.ToLocalTime().ToString("dd MMM HH:mm");
+}

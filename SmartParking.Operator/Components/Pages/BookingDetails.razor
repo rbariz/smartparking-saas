@@ -1,0 +1,298 @@
+﻿@page "/bookings/{BookingId:guid}"
+@rendermode InteractiveServer
+
+@inject BookingsAdminApiClient BookingsApi
+@inject ParkingsAdminApiClient ParkingsApi
+@inject IJSRuntime JS
+
+<PageTitle>Booking Details</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div>
+        <div class="page-title">Booking Details</div>
+        <div class="page-subtitle">Review reservation lifecycle and linked parking.</div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading booking...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else if (Booking is null)
+    {
+        <div class="panel">Booking not found.</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Booking</div>
+
+            <div class="stack-md">
+                <div>
+                    <div class="muted">Booking Id</div>
+                    <div><strong>@Booking.Id</strong></div>
+                </div>
+
+                <div>
+                    <div class="muted">Status</div>
+                    <StatusBadge Text="@Booking.Status" />
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Driver Id</div>
+                        <div class="kpi-value" style="font-size:16px">@Booking.DriverId</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Parking Id</div>
+                        <div class="kpi-value" style="font-size:16px">@Booking.ParkingId</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Start</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.StartTime)</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">End</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.EndTime)</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Reserved Price</div>
+                        <div class="kpi-value" style="font-size:16px">@Booking.ReservedPrice @Booking.PriceCurrency</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Expires At</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.ExpiresAtUtc)</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Created</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.CreatedAtUtc)</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Updated</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.UpdatedAtUtc)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Actions</div>
+            @if (!CanCancel && Booking?.Status == "expired")
+            {
+                <div class="muted">This booking is expired and cannot be cancelled.</div>
+            }
+            <div class="stack-md">
+                @if (CanCancel)
+                {
+                    <button class="action-btn-secondary"
+                            @onclick="CancelAsync"
+                            disabled="@IsActionRunning">
+                        Cancel Booking
+                    </button>
+                }
+
+                @if (CanComplete)
+                {
+                    <button class="action-btn"
+                            @onclick="CompleteAsync"
+                            disabled="@IsActionRunning">
+                        Mark as Completed
+                    </button>
+                }
+
+                @if (CanExpire)
+                {
+                    <button class="action-btn-secondary"
+                            @onclick="ExpireAsync"
+                            disabled="@IsActionRunning">
+                        Expire Booking
+                    </button>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(ActionMessage))
+                {
+                    <div class="muted">@ActionMessage</div>
+                }
+            </div>
+        </div>
+
+        @if (Parking is not null)
+        {
+            <div class="panel">
+                <div class="panel-title">Linked Parking</div>
+
+                <div class="stack-md">
+                    <div>
+                        <div><strong>@Parking.Name</strong></div>
+                        <div class="muted">@Parking.Address</div>
+                    </div>
+
+                    <div>
+                        <div class="muted">Status</div>
+                        <StatusBadge Text="@Parking.Status" />
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Available</div>
+                            <div class="kpi-value">@Parking.AvailableCount</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-label">Capacity</div>
+                            <div class="kpi-value">@Parking.TotalCapacity</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-label">Rate</div>
+                            <div class="kpi-value" style="font-size:16px">@Parking.HourlyRate @Parking.Currency</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div>
+            <a href="/bookings">← Back to bookings</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid BookingId { get; set; }
+
+    private BookingResponse? Booking;
+    private ParkingResponse? Parking;
+    private bool IsLoading = true;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Booking = await BookingsApi.GetByIdAsync(BookingId);
+
+            if (Booking is not null)
+            {
+                Parking = await ParkingsApi.GetByIdAsync(Booking.ParkingId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private string FormatDate(DateTime? value)
+        => value?.ToLocalTime().ToString("dd MMM yyyy HH:mm") ?? "-";
+
+    private bool IsActionRunning;
+    private string? ActionMessage;
+
+    private bool CanCancel =>
+        Booking?.Status switch
+        {
+            "pending_payment" => true,
+            "confirmed" => true,
+            _ => false
+        };
+
+    private bool CanComplete =>
+        Booking?.Status == "active";
+
+    private bool CanExpire =>
+        Booking?.Status == "pending_payment";
+
+
+    private async Task CancelAsync()
+    {
+        if (Booking is null)
+            return;
+
+        var confirmed = await ConfirmAsync(
+            "Are you sure you want to cancel this booking?");
+
+        if (!confirmed)
+            return;
+
+        await RunAction(async () =>
+        {
+            await BookingsApi.CancelAsync(Booking.Id);
+        });
+    }
+
+    private async Task CompleteAsync()
+    {
+        if (Booking is null)
+            return;
+
+        var confirmed = await ConfirmAsync(
+            "Are you sure you want to mark this booking as completed?");
+
+        if (!confirmed)
+            return;
+
+        await RunAction(async () =>
+        {
+            await BookingsApi.CompleteAsync(Booking.Id);
+        });
+    }
+
+    private async Task ExpireAsync()
+    {
+        if (Booking is null)
+            return;
+
+        var confirmed = await ConfirmAsync(
+            "Are you sure you want to expire this booking?");
+
+        if (!confirmed)
+            return;
+
+        await RunAction(async () =>
+        {
+            await BookingsApi.ExpireAsync(Booking.Id);
+        });
+    }
+
+    private async Task RunAction(Func<Task> action)
+    {
+        try
+        {
+            IsActionRunning = true;
+            ActionMessage = null;
+
+            await action();
+
+            ActionMessage = "Action completed successfully.";
+            Booking = await BookingsApi.GetByIdAsync(Booking.Id);
+        }
+        catch (Exception ex)
+        {
+            ActionMessage = ex.Message;
+        }
+        finally
+        {
+            IsActionRunning = false;
+        }
+    }
+
+    private async Task<bool> ConfirmAsync(string message)
+    {
+        return await JS.InvokeAsync<bool>("confirm", message);
+    }
+}

@@ -1,0 +1,153 @@
+﻿@page "/payments/{PaymentId:guid}"
+
+@rendermode InteractiveServer
+
+@inject PaymentsAdminApiClient PaymentsApi
+@inject BookingsAdminApiClient BookingsApi
+
+<PageTitle>Payment Details</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div>
+        <div class="page-title">Payment Details</div>
+        <div class="page-subtitle">Review payment status and linked booking.</div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading payment...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else if (Payment is null)
+    {
+        <div class="panel">Payment not found.</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Payment</div>
+
+            <div class="stack-md">
+                <div>
+                    <div class="muted">Payment Id</div>
+                    <div><strong>@Payment.Id</strong></div>
+                </div>
+
+                <div>
+                    <div class="muted">Status</div>
+                    <StatusBadge Text="@Payment.Status" />
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Booking Id</div>
+                        <div class="kpi-value" style="font-size:16px">@Payment.BookingId</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Method</div>
+                        <div class="kpi-value" style="font-size:16px">@Payment.Method</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Amount</div>
+                        <div class="kpi-value" style="font-size:16px">@Payment.Amount @Payment.Currency</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Provider Ref</div>
+                        <div class="kpi-value" style="font-size:16px">
+                            @(string.IsNullOrWhiteSpace(Payment.ProviderReference) ? "-" : Payment.ProviderReference)
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Created</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Payment.CreatedAtUtc)</div>
+                    </div>
+@* 
+                    <div class="kpi-card">
+                        <div class="kpi-label">Updated</div>
+                        <div class="kpi-value" style="font-size:16px">@FormatDate(Payment.UpdatedAtUtc)</div>
+                    </div> *@
+                </div>
+            </div>
+        </div>
+
+        @if (Booking is not null)
+        {
+            <div class="panel">
+                <div class="panel-title">Linked Booking</div>
+
+                <div class="stack-md">
+                    <div>
+                        <div class="muted">Booking Id</div>
+                        <div><a href="@($"/bookings/{Booking.Id}")"><strong>@Booking.Id</strong></a></div>
+                    </div>
+
+                    <div>
+                        <div class="muted">Status</div>
+                        <StatusBadge Text="@Booking.Status" />
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Start</div>
+                            <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.StartTime)</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-label">End</div>
+                            <div class="kpi-value" style="font-size:16px">@FormatDate(Booking.EndTime)</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-label">Reserved Price</div>
+                            <div class="kpi-value" style="font-size:16px">@Booking.ReservedPrice @Booking.PriceCurrency</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div>
+            <a href="/payments">← Back to payments</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid PaymentId { get; set; }
+
+    private PaymentResponse? Payment;
+    private BookingResponse? Booking;
+    private bool IsLoading = true;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Payment = await PaymentsApi.GetByIdAsync(PaymentId);
+
+            if (Payment is not null)
+            {
+                Booking = await BookingsApi.GetByIdAsync(Payment.BookingId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private static string FormatDate(DateTime? value)
+        => value?.ToLocalTime().ToString("dd MMM yyyy HH:mm") ?? "-";
+}

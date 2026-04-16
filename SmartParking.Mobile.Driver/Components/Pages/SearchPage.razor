@@ -1,0 +1,152 @@
+﻿@page "/"
+@page "/search"
+
+@inject SearchState SearchState
+@inject LocationService LocationService
+@inject NavigationManager Nav
+
+<PageHeader Title="Find Parking"
+            Subtitle="Quickly search nearby parking spots." ShowBackButton="false" />
+
+<ErrorBanner Message="@Error" />
+
+<div class="card">
+
+    <!-- LOCATION -->
+    <div class="section">
+        <div class="label">Location</div>
+
+        <PrimaryButton Text="@LocationButtonText"
+                       Variant="secondary"
+                       Disabled="@IsLocating"
+                       OnClick="UseMyLocationAsync" />
+
+        <div class="muted" style="margin-top:6px;">
+            Lat: @SearchState.Latitude | Lng: @SearchState.Longitude
+        </div>
+    </div>
+
+    <!-- TIME PRESETS -->
+    <div class="section">
+        <div class="label">Quick Duration</div>
+
+        <div class="chips">
+            <div class="chip" @onclick="() => ApplyPreset(1)">1 hour</div>
+            <div class="chip" @onclick="() => ApplyPreset(2)">2 hours</div>
+            <div class="chip" @onclick="() => ApplyPreset(4)">4 hours</div>
+        </div>
+    </div>
+
+    <!-- TIME INPUT -->
+    <div class="section">
+
+        <div class="field">
+            <label class="label">Start</label>
+            <input class="input" type="datetime-local" @bind="StartLocal" />
+        </div>
+
+        <div class="field">
+            <label class="label">End</label>
+            <input class="input" type="datetime-local" @bind="EndLocal" />
+        </div>
+
+    </div>
+
+    <!-- RADIUS -->
+    <div class="section">
+        <div class="label">Search Radius</div>
+
+        <div class="chips">
+            <div class="chip" @onclick="() => SetRadius(500)">500m</div>
+            <div class="chip" @onclick="() => SetRadius(1000)">1 km</div>
+            <div class="chip" @onclick="() => SetRadius(3000)">3 km</div>
+        </div>
+
+        <div class="muted">Current: @SearchState.RadiusMeters m</div>
+    </div>
+
+    <!-- ACTION -->
+    <PrimaryButton Text="Search Parking"
+                   Disabled="@(!CanSearch)"
+                   OnClick="OnSearch" />
+
+</div>
+
+@code {
+    private string? Error;
+    private bool IsLocating;
+
+    private string LocationButtonText =>
+        IsLocating ? "Getting location..." : "Use my location";
+
+    private bool CanSearch =>
+        SearchState.Latitude != 0 &&
+        SearchState.Longitude != 0 &&
+        SearchState.EndTime > SearchState.StartTime;
+
+    protected override void OnInitialized()
+    {
+        // Auto defaults (first load only)
+        if (SearchState.StartTime < DateTime.UtcNow)
+        {
+            SearchState.StartTime = DateTime.UtcNow.AddMinutes(10);
+            SearchState.EndTime = SearchState.StartTime.AddHours(1);
+        }
+    }
+
+    private DateTime StartLocal
+    {
+        get => SearchState.StartTime.ToLocalTime();
+        set => SearchState.StartTime = value.ToUniversalTime();
+    }
+
+    private DateTime EndLocal
+    {
+        get => SearchState.EndTime.ToLocalTime();
+        set => SearchState.EndTime = value.ToUniversalTime();
+    }
+
+    private async Task UseMyLocationAsync()
+    {
+        try
+        {
+            Error = null;
+            IsLocating = true;
+
+            var location = await LocationService.GetCurrentLocationAsync();
+
+            if (location is null)
+            {
+                Error = "Unable to get location.";
+                return;
+            }
+
+            SearchState.Latitude = (decimal)location.Latitude;
+            SearchState.Longitude = (decimal)location.Longitude;
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLocating = false;
+        }
+    }
+
+    private void ApplyPreset(int hours)
+    {
+        SearchState.StartTime = DateTime.UtcNow.AddMinutes(10);
+        SearchState.EndTime = SearchState.StartTime.AddHours(hours);
+    }
+
+    private void SetRadius(int radius)
+    {
+        SearchState.RadiusMeters = radius;
+    }
+
+    private void OnSearch()
+    {
+        Nav.NavigateTo("/results");
+    }
+}

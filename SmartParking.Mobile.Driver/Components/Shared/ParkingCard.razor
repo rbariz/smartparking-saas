@@ -1,0 +1,79 @@
+﻿
+
+<div class="card">
+
+    @* Highlight badges *@
+    @if (Item.AvailableCount == 0)
+    {
+        <div class="badge-highlight">Full</div>
+    }
+    else if (Item.IsBestOption)
+    {
+        <div class="badge-highlight">Best option</div>
+    }
+    else if (Item.IsCheapest)
+    {
+        <div class="badge-highlight">Cheapest</div>
+    }
+
+    <div class="stack-sm">
+        <div class="card-title">@Item.Name</div>
+        <div class="muted">@Item.Address</div>
+
+        <StatusBadge Text="@Item.Status" />
+    </div>
+
+    <div class="meta-grid">
+
+        <div class="meta-box">
+            <div class="meta-label">Distance</div>
+            <div class="meta-value">@Item.DistanceLabel</div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">Available</div>
+            <div class="meta-value">
+                @Item.AvailableCount / @Item.TotalCapacity
+            </div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">Rate</div>
+            <div class="meta-value">
+                @Item.HourlyRate @Item.Currency
+            </div>
+        </div>
+
+        <div class="meta-box">
+            <div class="meta-label">Estimated</div>
+            <div class="meta-value">
+                @Item.EstimatedPrice @Item.Currency
+            </div>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 14px;">
+        <PrimaryButton Text="@ButtonText"
+               Disabled="@IsDisabled"
+               OnClick="OnViewClicked" />
+    </div>
+
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ParkingSearchListItemVm Item { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Guid> OnView { get; set; }
+
+    private string ButtonText => Item.AvailableCount == 0
+    ? "Full"
+    : "View Parking";
+
+    private bool IsDisabled => Item.AvailableCount == 0;
+
+    private Task OnViewClicked()
+        => OnView.InvokeAsync(Item.ParkingId);
+}

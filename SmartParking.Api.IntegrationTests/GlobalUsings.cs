@@ -1,0 +1,9 @@
+﻿global using FluentAssertions;
+global using SmartParking.Api.IntegrationTests.Common;
+global using SmartParking.Contracts.Operators;
+global using System.Net;
+global using System.Net.Http.Json;
+global using SmartParking.Contracts.Bookings;
+global using SmartParking.Contracts.Drivers;
+global using SmartParking.Contracts.Parkings;
+global using SmartParking.Contracts.Payments;

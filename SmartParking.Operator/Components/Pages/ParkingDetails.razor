@@ -1,0 +1,185 @@
+﻿@page "/parkings/{ParkingId:guid}"
+@rendermode InteractiveServer
+
+@inject ParkingsAdminApiClient ParkingsApi
+
+<PageTitle>Parking Details</PageTitle>
+
+<div class="page-wrap stack-md">
+    <div>
+        <div class="page-title">Parking Details</div>
+        <div class="page-subtitle">Review and update parking availability.</div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="panel">Loading parking...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">@Error</div>
+    }
+    else if (Parking is null)
+    {
+        <div class="panel">Parking not found.</div>
+    }
+    else
+    {
+        <div class="panel">
+            <div class="panel-title">Parking Info</div>
+
+            <div class="stack-md">
+                <div>
+                    <div><strong>@Parking.Name</strong></div>
+                    <div class="muted">@Parking.Address</div>
+                </div>
+
+                <div>
+                    <div class="muted">Current Status</div>
+                    <StatusBadge Text="@ResolveDisplayStatus(Parking)" />
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Available</div>
+                        <div class="kpi-value">@Parking.AvailableCount</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Capacity</div>
+                        <div class="kpi-value">@Parking.TotalCapacity</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-label">Rate</div>
+                        <div class="kpi-value" style="font-size:16px">@Parking.HourlyRate @Parking.Currency</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Update Availability</div>
+
+            @if (!string.IsNullOrWhiteSpace(SaveMessage))
+            {
+                <div class="muted">@SaveMessage</div>
+            }
+
+            <div class="stack-md">
+                <div class="filter-group">
+                    <label class="filter-label">Parking Status</label>
+                    <select class="filter-select" @bind="ParkingStatusValue">
+                        <option value="true">Open</option>
+                        <option value="false">Closed</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Available Count</label>
+                    <input class="filter-input"
+                           type="number"
+                           min="0"
+                           max="@Parking.TotalCapacity"
+                           @bind="AvailableCount" />
+                </div>
+
+                <button class="action-btn"
+                        @onclick="SaveAsync"
+                        disabled="@IsSaving">
+                    @(IsSaving ? "Saving..." : "Save Changes")
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <a href="/parkings">← Back to parkings</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid ParkingId { get; set; }
+
+    private ParkingResponse? Parking;
+    private bool IsLoading = true;
+    private bool IsSaving;
+    private string? Error;
+    private string? SaveMessage;
+
+    private string ParkingStatusValue = "true";
+    private int AvailableCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            Error = null;
+            Parking = await ParkingsApi.GetByIdAsync(ParkingId);
+
+            if (Parking is not null)
+            {
+                ParkingStatusValue = Parking.Status == "closed" ? "false" : "true";
+                AvailableCount = Parking.AvailableCount;
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (Parking is null)
+            return;
+
+        try
+        {
+            Error = null;
+            SaveMessage = null;
+            IsSaving = true;
+
+            await ParkingsApi.UpdateAvailabilityAsync(
+                ParkingId,
+                new ParkingAvailabilityUpdateRequest(
+                    ParkingStatusValue == "true",
+                    AvailableCount));
+
+            SaveMessage = "Parking availability updated.";
+
+            Parking = await ParkingsApi.GetByIdAsync(ParkingId);
+
+            if (Parking is not null)
+            {
+                ParkingStatusValue = Parking.Status == "closed" ? "false" : "true";
+                AvailableCount = Parking.AvailableCount;
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private static string ResolveDisplayStatus(ParkingResponse parking)
+    {
+        if (parking.AvailableCount == 0 && parking.Status != "closed")
+            return "full";
+
+        return parking.Status;
+    }
+}
