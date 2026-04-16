@@ -1,10 +1,10 @@
-# 🚗 SmartParking SaaS
+# 1. SmartParking SaaS
 
-> Real-time parking reservation platform built with .NET 8, Blazor, MAUI, and PostgreSQL.
+Real-time parking reservation platform built with .NET 8, Blazor, MAUI, and PostgreSQL.
 
 ---
 
-## ✨ Highlights
+## 2. Highlights
 
 - Real-time availability management (no overbooking)
 - Full booking lifecycle (Pending → Active → Completed → Expired → Cancelled)
@@ -14,7 +14,7 @@
 
 ---
 
-## 🇬🇧 Overview
+## 3. Overview
 
 SmartParking is a SaaS platform designed to manage parking reservations in real time.
 
@@ -26,16 +26,17 @@ It focuses on solving real-world problems such as:
 
 ---
 
-## 🧩 Architecture Overview
+## 4. Architecture Overview
 
-This project follows a **modular architecture inspired by Clean Architecture principles**:
+This project follows a modular architecture inspired by Clean Architecture principles:
 
 - Domain-driven design for business rules
 - Application layer for use cases and handlers
 - Infrastructure layer for persistence (EF Core)
-- Separate UI layers:
-  - Blazor Server (Operator Dashboard)
-  - MAUI Blazor Hybrid (Driver App)
+
+Separate UI layers:
+- Blazor Server (Operator Dashboard)
+- MAUI Blazor Hybrid (Driver App)
 
 The system is designed to be:
 - scalable
@@ -44,7 +45,7 @@ The system is designed to be:
 
 ---
 
-## ⚠️ Domain Challenges
+## 5. Domain Challenges
 
 This project is not a simple CRUD application.
 
@@ -57,7 +58,7 @@ It addresses real-world constraints:
 
 ---
 
-## 🛠️ Technical Stack
+## 6. Technical Stack
 
 - .NET 8 / ASP.NET Core Web API
 - Blazor Server (Admin UI)
@@ -67,15 +68,17 @@ It addresses real-world constraints:
 
 ---
 
-## ⚙️ Features
+## 7. Features
 
-### 🚗 Driver (Mobile)
+### 7.1 Driver (Mobile)
+
 - Search nearby parking
 - View availability in real time
 - Reserve a parking spot
 - Payment flow
 
-### 🧑‍💼 Operator (Admin)
+### 7.2 Operator (Admin)
+
 - Dashboard with KPIs
 - Booking lifecycle management
 - Parking availability management
@@ -84,34 +87,34 @@ It addresses real-world constraints:
 
 ---
 
-## 📸 Screenshots
+## 8. Screenshots
 
-### Operator Dashboard
+### 8.1 Operator Dashboard
 ![Dashboard](docs/screenshots/dashboard.png)
 
-### Bookings Management
+### 8.2 Bookings Management
 ![Bookings](docs/screenshots/bookings.png)
 
-### Parking Details
+### 8.3 Parking Details
 ![Parking](docs/screenshots/parking-details.png)
 
-### Payments
+### 8.4 Payments
 ![Payments](docs/screenshots/payments.png)
 
-### Mobile App (Driver)
+### 8.5 Mobile - Search
 ![Mobile](docs/screenshots/mobile-search.png)
 
-### Mobile App (Driver)
+### 8.6 Mobile - Availability
 ![Mobile](docs/screenshots/mobile-availability.png)
 
-### Mobile App (Driver)
+### 8.7 Mobile - Booking Details
 ![Mobile](docs/screenshots/mobile-booking-details.png)
 
 ---
 
-## 💡 Why this project matters
+## 9. Why this project matters
 
-This project demonstrates the design of a **real SaaS system**:
+This project demonstrates the design of a real SaaS system:
 
 - not just UI or CRUD
 - but full product thinking
@@ -122,28 +125,28 @@ It reflects how production systems are built in practice.
 
 ---
 
-## 🚀 Current Status
+## 10. Current Status
 
 Work in progress.
 
 Main features implemented:
-- Search + booking flow
+- Search and booking flow
 - Operator dashboard (KPIs + quick actions)
 - Booking admin actions (cancel, complete, expire)
-- Auto-refresh + filters + URL sync
+- Auto-refresh with filters and URL synchronization
 
 ---
 
-## 🔮 Next Steps
+## 11. Next Steps
 
 - SignalR real-time updates
 - Payment reconciliation improvements
-- Advanced filtering & analytics
+- Advanced filtering and analytics
 - Anti-fraud patterns (future extension)
 
 ---
 
-## 👤 Author
+## 12. Author
 
 Rachid Bariz  
 Senior Full-Stack .NET Architect  
@@ -153,7 +156,7 @@ Product-driven engineer building SaaS platforms
 
 ---
 
-# 🇫🇷 Présentation
+# 13. Présentation (FR)
 
 SmartParking est une plateforme SaaS de réservation de parking en temps réel.
 
@@ -165,7 +168,7 @@ Elle permet de gérer des problématiques métier concrètes :
 
 ---
 
-## 🧠 Concepts clés
+## 14. Concepts clés
 
 - Gestion de disponibilité en temps réel
 - Cycle de vie des réservations
@@ -175,7 +178,7 @@ Elle permet de gérer des problématiques métier concrètes :
 
 ---
 
-## 🏗️ Architecture
+## 15. Architecture
 
 - Backend : ASP.NET Core Web API (.NET 8)
 - Application : Clean Architecture
@@ -187,15 +190,17 @@ Elle permet de gérer des problématiques métier concrètes :
 
 ---
 
-## ⚙️ Fonctionnalités
+## 16. Fonctionnalités
 
-### 🚗 Driver (Mobile)
+### 16.1 Driver (Mobile)
+
 - Recherche de parking
 - Visualisation de la disponibilité
 - Réservation
 - Paiement
 
-### 🧑‍💼 Opérateur (Admin)
+### 16.2 Opérateur (Admin)
+
 - Dashboard KPI
 - Gestion des réservations
 - Gestion des parkings
@@ -204,7 +209,7 @@ Elle permet de gérer des problématiques métier concrètes :
 
 ---
 
-## 🔥 Points forts
+## 17. Points forts
 
 Ce projet traite de vrais sujets métier :
 
@@ -214,7 +219,7 @@ Ce projet traite de vrais sujets métier :
 
 ---
 
-## 🚀 Statut
+## 18. Statut
 
 Projet en cours de développement.
 
@@ -222,11 +227,11 @@ Fonctionnalités principales déjà en place :
 - recherche + réservation
 - dashboard opérateur
 - actions admin sur bookings
-- auto-refresh + filtres avancés
+- auto-refresh et filtres avancés
 
 ---
 
-## 🔮 Prochaines étapes
+## 19. Prochaines étapes
 
 - SignalR temps réel
 - amélioration des paiements
@@ -235,7 +240,7 @@ Fonctionnalités principales déjà en place :
 
 ---
 
-## 👤 Auteur
+## 20. Auteur
 
 Rachid Bariz  
 Architecte logiciel .NET Senior  
