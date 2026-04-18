@@ -4,9 +4,9 @@
              xmlns:local="clr-namespace:SmartParking.Mobile.Driver"
              x:Class="SmartParking.Mobile.Driver.MainPage">
 
-    <BlazorWebView HostPage="wwwroot/index.html">
+    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+            <RootComponent Selector="#app" ComponentType="{x:Type local:Components.Routes}" />
         </BlazorWebView.RootComponents>
     </BlazorWebView>
 

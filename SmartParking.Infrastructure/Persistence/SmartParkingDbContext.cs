@@ -16,6 +16,8 @@ namespace SmartParking.Infrastructure.Persistence
         public DbSet<Booking> Bookings => Set<Booking>();
         public DbSet<Payment> Payments => Set<Payment>();
 
+        public DbSet<DriverOtpChallenge> DriverOtpChallenges { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartParkingDbContext).Assembly);

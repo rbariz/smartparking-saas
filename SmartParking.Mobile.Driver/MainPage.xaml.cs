@@ -1,9 +1,10 @@
-﻿namespace SmartParking.Mobile.Driver;
-
-public partial class MainPage : ContentPage
+﻿namespace SmartParking.Mobile.Driver
 {
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    public partial class MainPage : ContentPage
+    {
+        public MainPage()
+        {
+            InitializeComponent();
+        }
+    }
 }

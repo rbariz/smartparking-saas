@@ -11,6 +11,8 @@ using SmartParking.Application.Features.Bookings.CreateBooking;
 using SmartParking.Application.Features.Bookings.GetAllBookings;
 using SmartParking.Application.Features.Bookings.GetBooking;
 using SmartParking.Application.Features.Bookings.ListDriverBookings;
+using SmartParking.Application.Features.DriverAuth.RequestDriverOtp;
+using SmartParking.Application.Features.DriverAuth.VerifyDriverOtp;
 using SmartParking.Application.Features.Drivers.CreateDriver;
 using SmartParking.Application.Features.Drivers.GetDriverById;
 using SmartParking.Application.Features.Operators.CreateOperator;
@@ -57,6 +59,10 @@ namespace SmartParking.Infrastructure.DependencyInjection
 
             services.AddScoped<IBookingExpirationService, BookingExpirationService>();
 
+            services.AddScoped<IDriverOtpChallengeRepository, DriverOtpChallengeRepository>();
+            services.AddScoped<IDriverTokenService, DriverTokenService>();
+
+
 
             return services;
         }
@@ -90,6 +96,9 @@ namespace SmartParking.Infrastructure.DependencyInjection
             services.AddScoped<ConfirmPaymentHandler>();
             services.AddScoped<GetPaymentHandler>();
             services.AddScoped<GetAllPaymentsHandler>();
+
+            services.AddScoped<RequestDriverOtpHandler>();
+            services.AddScoped<VerifyDriverOtpHandler>();
 
 
             return services;

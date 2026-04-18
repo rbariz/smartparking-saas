@@ -1,14 +1,12 @@
-﻿namespace SmartParking.Mobile.Driver;
-
-public partial class App : Application
+﻿namespace SmartParking.Mobile.Driver
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    public partial class App : Application
+    {
+        public App()
+        {
+            InitializeComponent();
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new MainPage()) { Title = "SmartParking.Mobile.Driver" };
-	}
+            MainPage = new MainPage();
+        }
+    }
 }

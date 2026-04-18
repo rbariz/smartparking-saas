@@ -15,9 +15,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartParking.Contracts", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartParking.Api.IntegrationTests", "SmartParking.Api.IntegrationTests\SmartParking.Api.IntegrationTests.csproj", "{9E9AF110-CC9D-4A02-B3BF-66B2BE7F3EC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartParking.Mobile.Driver", "SmartParking.Mobile.Driver\SmartParking.Mobile.Driver.csproj", "{4F467291-5B48-44B7-8884-22F8AC607DAB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartParking.Operator", "SmartParking.Operator\SmartParking.Operator.csproj", "{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartParking.Mobile.Driver", "SmartParking.Mobile.Driver\SmartParking.Mobile.Driver.csproj", "{CAFDD46B-DD2E-4B34-A68F-352934A06579}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,19 +101,6 @@ Global
 		{9E9AF110-CC9D-4A02-B3BF-66B2BE7F3EC0}.Release|x64.Build.0 = Release|Any CPU
 		{9E9AF110-CC9D-4A02-B3BF-66B2BE7F3EC0}.Release|x86.ActiveCfg = Release|Any CPU
 		{9E9AF110-CC9D-4A02-B3BF-66B2BE7F3EC0}.Release|x86.Build.0 = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|x64.Build.0 = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Debug|x86.Build.0 = Debug|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|x64.ActiveCfg = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|x64.Build.0 = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|x86.ActiveCfg = Release|Any CPU
-		{4F467291-5B48-44B7-8884-22F8AC607DAB}.Release|x86.Build.0 = Release|Any CPU
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -126,6 +113,24 @@ Global
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Release|x64.Build.0 = Release|Any CPU
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Release|x86.ActiveCfg = Release|Any CPU
 		{41D28F3C-0D92-4424-B5FD-AD87A41C16CB}.Release|x86.Build.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x64.Build.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x86.Build.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x64.ActiveCfg = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x64.Build.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x64.Deploy.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x86.ActiveCfg = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x86.Build.0 = Release|Any CPU
+		{CAFDD46B-DD2E-4B34-A68F-352934A06579}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

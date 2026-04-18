@@ -5,6 +5,11 @@
     <ProjectReference Include="..\SmartParking.Contracts\SmartParking.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DependencyInjection\" />
+    <Folder Include="Rules\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
