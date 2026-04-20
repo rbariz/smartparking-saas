@@ -1,6 +1,7 @@
 ﻿@page "/driver/auth"
 
 @inject DriverAuthApiService AuthApi
+@inject DriverAuthStateService AuthState
 @inject DriverSession DriverSession
 @inject NavigationManager Nav
 
@@ -22,6 +23,13 @@
     {
         <div class="muted">
             Numéro déjà associé à votre compte. Un code OTP sera envoyé à ce numéro.
+        </div>
+
+        <div style="margin-top:10px;">
+            <PrimaryButton Text="Changer de numéro"
+                           Variant="secondary"
+                           OnClick="ChangePhoneAsync"
+                           Disabled="@IsBusy" />
         </div>
     }
 
@@ -58,6 +66,18 @@
 
         if (string.IsNullOrWhiteSpace(Phone) && !string.IsNullOrWhiteSpace(DriverSession.Phone))
             Phone = DriverSession.Phone;
+    }
+
+    private async Task ChangePhoneAsync()
+    {
+        ErrorMessage = null;
+        DebugOtpMessage = null;
+
+        AuthState.SignOut();
+
+        Phone = string.Empty;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SendOtpAsync()
