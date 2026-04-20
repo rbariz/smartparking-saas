@@ -1,0 +1,65 @@
+﻿@page "/driver/profile"
+
+@inject DriverSession DriverSession
+@inject DriverAuthStateService AuthState
+@inject NavigationManager Nav
+
+<DriverAuthGuard>
+
+    <PageHeader Title="Mon Profil"
+                Subtitle="Informations du compte conducteur."
+                ShowBackButton="true" />
+
+    <div class="card">
+        <div class="card-title">Compte</div>
+
+        <div class="field">
+            <label class="label">Nom</label>
+            <div>@(string.IsNullOrWhiteSpace(DriverSession.DriverName) ? "-" : DriverSession.DriverName)</div>
+        </div>
+
+        <div class="field">
+            <label class="label">Téléphone</label>
+            <div>@(string.IsNullOrWhiteSpace(DriverSession.Phone) ? "-" : DriverSession.Phone)</div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(DriverSession.Email))
+        {
+            <div class="field">
+                <label class="label">Email</label>
+                <div>@DriverSession.Email</div>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <div class="card-title">Actions</div>
+
+        <div class="stack-sm">
+            <PrimaryButton Text="Changer de numéro"
+                           Variant="secondary"
+                           OnClick="ChangePhoneAsync" />
+
+            <PrimaryButton Text="Se déconnecter"
+                           Variant="secondary"
+                           OnClick="LogoutAsync" />
+        </div>
+    </div>
+
+</DriverAuthGuard>
+
+@code {
+    private Task ChangePhoneAsync()
+    {
+        AuthState.SignOut();
+        Nav.NavigateTo("/driver/auth");
+        return Task.CompletedTask;
+    }
+
+    private Task LogoutAsync()
+    {
+        AuthState.SignOut();
+        Nav.NavigateTo("/search");
+        return Task.CompletedTask;
+    }
+}
