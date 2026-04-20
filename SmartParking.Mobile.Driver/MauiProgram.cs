@@ -52,19 +52,34 @@ public static class MauiProgram
         builder.Services.AddScoped<BookingsApiClient>();
         builder.Services.AddScoped<PaymentsApiClient>();
         builder.Services.AddScoped<DriversApiClient>();
+        builder.Services.AddScoped<DriverAuthApiService>();
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<DriverPreferencesService>();
+        builder.Services.AddSingleton<DriverAuthStateService>();
 
-        //return builder.Build();
+
         var mauiApp = builder.Build();
 
         var driverSession = mauiApp.Services.GetRequiredService<DriverSession>();
         var driverPreferences = mauiApp.Services.GetRequiredService<DriverPreferencesService>();
 
-        var savedDriverId = driverPreferences.GetDriverId();
-        if (savedDriverId.HasValue)
+        var savedSession = driverPreferences.GetSession();
+
+        if (savedSession is not null && savedSession.DriverId != Guid.Empty)
         {
-            driverSession.SetDriver(savedDriverId.Value);
+            // OTP policy:
+            // we remember the driver, but we do NOT auto-restore authentication
+            driverSession.SetDriver(
+                savedSession.DriverId,
+                savedSession.DriverName,
+                savedSession.Phone,
+                savedSession.Email,
+                accessToken: null,
+                expiresAtUtc: null);
+        }
+        else
+        {
+            driverSession.Clear();
         }
 
         return mauiApp;

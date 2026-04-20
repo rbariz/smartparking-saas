@@ -1,36 +1,58 @@
 ﻿@page "/booking/{BookingId:guid}"
 
-
 @inject BookingsApiClient BookingsApi
 @inject PaymentsApiClient PaymentsApi
 @inject NavigationManager Nav
 
+<DriverAuthGuard>
 
+    <PageHeader Title="Booking"
+                Subtitle="Track the status of your reservation."
+                ShowBackButton="true" />
 
+    <ErrorBanner Message="@Error" />
 
-<PageHeader Title="Booking"
-            Subtitle="Complete your payment to confirm your spot." ShowBackButton="true" />
+    @if (IsLoading)
+    {
+        <div class="card">Loading booking...</div>
+    }
+    else if (Booking is null)
+    {
+        <EmptyState Title="Booking not found"
+                    Message="Unable to load this booking." />
+    }
+    else
+    {
+        <BookingSummaryCard Booking="Booking" />
 
-@if (IsLoading)
-{
-    <div class="card">Loading booking...</div>
-}
-else if (!string.IsNullOrWhiteSpace(Error))
-{
-    <div class="error-banner">@Error</div>
-}
-else if (Booking is null)
-{
-    <div class="empty-state">Booking not found.</div>
-}
-else
-{
-    <BookingSummaryCard Booking="Booking" />
+        <div class="card">
+            <div class="card-title">Status</div>
+            <div class="section">
+                <StatusBadge Text="@Booking.Status" />
+            </div>
 
-    <PrimaryButton Text="Pay Now"
-                   Disabled="@IsPaying"
-                   OnClick="PayAsync" />
-}
+            <div class="muted">
+                Booking reference: @Booking.Id
+            </div>
+        </div>
+
+        <div class="stack-sm">
+            @if (Booking.Status == "pending_payment")
+            {
+                <PrimaryButton Text="Pay Now"
+                               Disabled="@IsPaying"
+                               OnClick="PayAsync" />
+            }
+            else
+            {
+                <PrimaryButton Text="Back to My Bookings"
+                               Variant="secondary"
+                               OnClick="GoToBookings" />
+            }
+        </div>
+    }
+
+</DriverAuthGuard>
 
 @code {
     [Parameter] public Guid BookingId { get; set; }
@@ -42,8 +64,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
         try
         {
+            Error = null;
+            IsLoading = true;
+
             Booking = await BookingsApi.GetByIdAsync(BookingId);
         }
         catch (Exception ex)
@@ -83,5 +113,10 @@ else
         {
             IsPaying = false;
         }
+    }
+
+    private void GoToBookings()
+    {
+        Nav.NavigateTo("/driver/bookings");
     }
 }

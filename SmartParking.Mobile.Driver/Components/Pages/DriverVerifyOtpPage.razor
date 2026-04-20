@@ -1,0 +1,126 @@
+﻿@page "/driver/verify-otp"
+
+@inject DriverAuthApiService AuthApi
+@inject DriverAuthStateService AuthState
+@inject DriverSession DriverSession
+@inject NavigationManager Nav
+
+<PageHeader Title="Vérification"
+            Subtitle="Entrez le code reçu" />
+
+<ErrorBanner Message="@ErrorMessage" />
+
+@if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(DebugCode))
+{
+    <div class="card" style="background:#fff3cd;">
+        <div class="card-title">Debug OTP</div>
+        <div class="muted">Code retourné par l'API :</div>
+        <div style="font-size:20px;font-weight:bold;">@DebugCode</div>
+    </div>
+}
+
+<div class="card">
+    <div class="field">
+        <label class="label">Téléphone</label>
+        <input class="input" @bind="Phone" disabled />
+    </div>
+
+    @if (ShowFullName)
+    {
+        <div class="field">
+            <label class="label">Nom</label>
+            <input class="input" @bind="FullName" placeholder="Votre nom" />
+        </div>
+    }
+
+    <div class="field">
+        <label class="label">Code OTP</label>
+        <input class="input" @bind="Code" placeholder="Entrez le code OTP" />
+    </div>
+
+    <PrimaryButton Text="Valider"
+                   OnClick="VerifyAsync"
+                   Disabled="@IsBusy" />
+</div>
+
+@code {
+    private string Phone = string.Empty;
+    private string Code = string.Empty;
+    private string FullName = string.Empty;
+    private string? ErrorMessage;
+    private bool IsBusy;
+    private string? ReturnUrl;
+    private string? DebugCode;
+
+    private bool ShowFullName => !DriverSession.HasDriver;
+
+    protected override void OnInitialized()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("phone", out var phone))
+            Phone = phone.ToString();
+
+        if (query.TryGetValue("returnUrl", out var returnUrl))
+            ReturnUrl = returnUrl.ToString();
+
+        if (query.TryGetValue("debugCode", out var debugCode))
+        {
+            DebugCode = debugCode.ToString();
+
+            if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(DebugCode))
+            {
+                Code = DebugCode;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(FullName) && !string.IsNullOrWhiteSpace(DriverSession.DriverName))
+            FullName = DriverSession.DriverName;
+    }
+
+    private async Task VerifyAsync()
+    {
+        ErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(Phone))
+        {
+            ErrorMessage = "Téléphone requis.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Code))
+        {
+            ErrorMessage = "Code requis.";
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+
+            var response = await AuthApi.VerifyOtpAsync(new(
+                Phone.Trim(),
+                Code.Trim(),
+                string.IsNullOrWhiteSpace(FullName) ? null : FullName.Trim()));
+
+            AuthState.SignIn(
+                response.Driver.Id,
+                response.Driver.FullName,
+                response.Driver.Phone,
+                response.Driver.Email,
+                response.AccessToken,
+                response.ExpiresAtUtc);
+
+            Nav.NavigateTo(!string.IsNullOrWhiteSpace(ReturnUrl) ? ReturnUrl : "/driver/bookings");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}

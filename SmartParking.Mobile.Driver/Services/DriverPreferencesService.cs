@@ -1,29 +1,41 @@
-﻿namespace SmartParking.Mobile.Driver.Services
+﻿using SmartParking.Mobile.Driver.Models;
+using System.Text.Json;
+
+namespace SmartParking.Mobile.Driver.Services
 {
     public sealed class DriverPreferencesService
     {
-        private const string DriverIdKey = "driver_id";
+        private const string DriverSessionKey = "driver_session";
 
-        public Guid? GetDriverId()
+        public DriverSessionData? GetSession()
         {
-            var raw = Preferences.Default.Get(DriverIdKey, string.Empty);
+            var raw = Preferences.Default.Get(DriverSessionKey, string.Empty);
 
             if (string.IsNullOrWhiteSpace(raw))
                 return null;
 
-            return Guid.TryParse(raw, out var driverId) ? driverId : null;
+            try
+            {
+                return JsonSerializer.Deserialize<DriverSessionData>(raw);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        public void SaveDriverId(Guid driverId)
+        public void SaveSession(DriverSessionData session)
         {
-            Preferences.Default.Set(DriverIdKey, driverId.ToString());
+            var raw = JsonSerializer.Serialize(session);
+            Preferences.Default.Set(DriverSessionKey, raw);
         }
 
-        public void ClearDriverId()
+        public void ClearSession()
         {
-            Preferences.Default.Remove(DriverIdKey);
+            Preferences.Default.Remove(DriverSessionKey);
         }
     }
 
+    
 
 }

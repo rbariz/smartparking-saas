@@ -1,0 +1,26 @@
+﻿@inject DriverAuthStateService AuthState
+@inject NavigationManager Nav
+
+@if (AuthState.IsAuthenticated)
+{
+    @ChildContent
+}
+else
+{
+    <div>Redirection...</div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && !AuthState.IsAuthenticated)
+        {
+            var returnUrl = Uri.EscapeDataString(
+                Nav.Uri.Replace(Nav.BaseUri, "/"));
+
+            Nav.NavigateTo($"/driver/auth?returnUrl={returnUrl}");
+        }
+    }
+}

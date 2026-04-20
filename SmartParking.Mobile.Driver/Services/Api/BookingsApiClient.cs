@@ -1,5 +1,7 @@
 ﻿using SmartParking.Contracts.Bookings;
+using SmartParking.Contracts.DriverAuth;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace SmartParking.Mobile.Driver.Services.Api
 {

@@ -4,6 +4,7 @@
 @inject BookingsApiClient BookingsApi
 @inject SearchState SearchState
 @inject DriverSession DriverSession
+@inject DriverAuthStateService AuthState
 @inject NavigationManager Nav
 
 <PageHeader Title="Parking Details"
@@ -173,9 +174,10 @@ else
             Error = null;
             IsBooking = true;
 
-            if (DriverSession.DriverId == Guid.Empty)
+            if (!AuthState.IsAuthenticated || DriverSession.DriverId == Guid.Empty)
             {
-                Error = "DriverId is not configured yet.";
+                var returnUrl = Uri.EscapeDataString($"/parking/{ParkingId}");
+                Nav.NavigateTo($"/driver/auth?returnUrl={returnUrl}");
                 return;
             }
 

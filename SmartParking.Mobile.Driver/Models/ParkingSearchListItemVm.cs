@@ -17,4 +17,5 @@
         public bool IsBestOption { get; set; }
         public bool IsCheapest { get; set; }
     }
+
 }

@@ -1,0 +1,126 @@
+﻿@page "/driver/auth"
+
+@inject DriverAuthApiService AuthApi
+@inject DriverSession DriverSession
+@inject NavigationManager Nav
+
+<PageHeader Title="Connexion"
+            Subtitle="Entrez votre numéro pour recevoir un code" />
+
+<ErrorBanner Message="@ErrorMessage" />
+
+@if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(DebugOtpMessage))
+{
+    <div class="card">
+        <div class="card-title">Debug OTP</div>
+        <div class="muted">@DebugOtpMessage</div>
+    </div>
+}
+
+<div class="card">
+    @if (IsPhoneLocked)
+    {
+        <div class="muted">
+            Numéro déjà associé à votre compte. Un code OTP sera envoyé à ce numéro.
+        </div>
+    }
+
+    <div class="field">
+        <label class="label">Téléphone</label>
+        <input class="input"
+               @bind="Phone"
+               placeholder="06XXXXXXXX"
+               disabled="@IsPhoneLocked" />
+    </div>
+
+    <PrimaryButton Text="Envoyer le code"
+                   OnClick="SendOtpAsync"
+                   Disabled="@IsBusy" />
+</div>
+
+@code {
+    private string Phone = string.Empty;
+    private bool IsBusy;
+    private string? ErrorMessage;
+    private string? ReturnUrl;
+    private string? DebugOtpMessage;
+
+    private bool IsPhoneLocked =>
+        DriverSession.HasDriver && !string.IsNullOrWhiteSpace(DriverSession.Phone);
+
+    protected override void OnInitialized()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("returnUrl", out var returnUrl))
+            ReturnUrl = returnUrl.ToString();
+
+        if (string.IsNullOrWhiteSpace(Phone) && !string.IsNullOrWhiteSpace(DriverSession.Phone))
+            Phone = DriverSession.Phone;
+    }
+
+    private async Task SendOtpAsync()
+    {
+        ErrorMessage = null;
+        DebugOtpMessage = null;
+
+        if (string.IsNullOrWhiteSpace(Phone))
+        {
+            ErrorMessage = "Veuillez saisir un numéro.";
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+
+            var response = await AuthApi.RequestOtpAsync(new(
+                Phone.Trim(),
+                "sms"));
+
+            string? debugCode = null;
+
+            if (AppEnvironment.IsDev)
+            {
+                DebugOtpMessage = response.Message;
+                debugCode = ExtractCode(response.Message);
+            }
+
+            var encodedPhone = Uri.EscapeDataString(Phone.Trim());
+            var encodedReturn = Uri.EscapeDataString(ReturnUrl ?? string.Empty);
+
+            var target = $"/driver/verify-otp?phone={encodedPhone}&returnUrl={encodedReturn}";
+
+            if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(debugCode))
+            {
+                var encodedDebugCode = Uri.EscapeDataString(debugCode);
+                target += $"&debugCode={encodedDebugCode}";
+            }
+
+            Nav.NavigateTo(target);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private static string? ExtractCode(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return null;
+
+        var marker = "Code:";
+        var index = message.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+
+        if (index < 0)
+            return null;
+
+        return message[(index + marker.Length)..].Trim();
+    }
+}
