@@ -4,41 +4,42 @@
 @inject DriverAuthStateService AuthState
 @inject DriverSession DriverSession
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
-<PageHeader Title="Vérification"
-            Subtitle="Entrez le code reçu" />
+<PageHeader Title="@L["VerifyOtp_Title"]"
+            Subtitle="@L["VerifyOtp_Subtitle"]" />
 
 <ErrorBanner Message="@ErrorMessage" />
 
 @if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(DebugCode))
 {
     <div class="card" style="background:#fff3cd;">
-        <div class="card-title">Debug OTP</div>
-        <div class="muted">Code retourné par l'API :</div>
+        <div class="card-title">@L["VerifyOtp_DebugTitle"]</div>
+        <div class="muted">@L["VerifyOtp_DebugMessage"]</div>
         <div style="font-size:20px;font-weight:bold;">@DebugCode</div>
     </div>
 }
 
 <div class="card">
     <div class="field">
-        <label class="label">Téléphone</label>
+        <label class="label">@L["VerifyOtp_Phone"]</label>
         <input class="input" @bind="Phone" disabled />
     </div>
 
     @if (ShowFullName)
     {
         <div class="field">
-            <label class="label">Nom</label>
-            <input class="input" @bind="FullName" placeholder="Votre nom" />
+            <label class="label">@L["VerifyOtp_Name"]</label>
+            <input class="input" @bind="FullName" placeholder="@L["VerifyOtp_NamePlaceholder"]" />
         </div>
     }
 
     <div class="field">
-        <label class="label">Code OTP</label>
-        <input class="input" @bind="Code" placeholder="Entrez le code OTP" />
+        <label class="label">@L["VerifyOtp_Code"]</label>
+        <input class="input" @bind="Code" placeholder="@L["VerifyOtp_CodePlaceholder"]" />
     </div>
 
-    <PrimaryButton Text="Valider"
+    <PrimaryButton Text="@L["VerifyOtp_Action"]"
                    OnClick="VerifyAsync"
                    Disabled="@IsBusy" />
 </div>
@@ -85,13 +86,13 @@
 
         if (string.IsNullOrWhiteSpace(Phone))
         {
-            ErrorMessage = "Téléphone requis.";
+            ErrorMessage = L["VerifyOtp_PhoneRequired"];
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Code))
         {
-            ErrorMessage = "Code requis.";
+            ErrorMessage = L["VerifyOtp_CodeRequired"];
             return;
         }
 

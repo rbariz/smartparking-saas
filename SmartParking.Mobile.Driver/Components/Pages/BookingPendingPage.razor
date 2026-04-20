@@ -3,49 +3,50 @@
 @inject BookingsApiClient BookingsApi
 @inject PaymentsApiClient PaymentsApi
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <DriverAuthGuard>
 
-    <PageHeader Title="Booking"
-                Subtitle="Track the status of your reservation."
+    <PageHeader Title="@L["Booking_Title"]"
+                Subtitle="@L["Booking_Subtitle"]"
                 ShowBackButton="true" />
 
     <ErrorBanner Message="@Error" />
 
     @if (IsLoading)
     {
-        <div class="card">Loading booking...</div>
+        <div class="card">@L["Booking_Loading"]</div>
     }
     else if (Booking is null)
     {
-        <EmptyState Title="Booking not found"
-                    Message="Unable to load this booking." />
+        <EmptyState Title="@L["Booking_NotFoundTitle"]"
+                    Message="@L["Booking_NotFoundMessage"]" />
     }
     else
     {
         <BookingSummaryCard Booking="Booking" />
 
         <div class="card">
-            <div class="card-title">Status</div>
+            <div class="card-title">@L["Booking_StatusTitle"]</div>
             <div class="section">
-                <StatusBadge Text="@Booking.Status" />
+                <StatusBadge Text="@StatusMapper.MapBookingStatus(Booking.Status, L)" />
             </div>
 
             <div class="muted">
-                Booking reference: @Booking.Id
+                @L["Booking_Reference"]: @Booking.Id
             </div>
         </div>
 
         <div class="stack-sm">
             @if (Booking.Status == "pending_payment")
             {
-                <PrimaryButton Text="Pay Now"
+                <PrimaryButton Text="@L["Booking_PayNow"]"
                                Disabled="@IsPaying"
                                OnClick="PayAsync" />
             }
             else
             {
-                <PrimaryButton Text="Back to My Bookings"
+                <PrimaryButton Text="@L["Booking_BackToBookings"]"
                                Variant="secondary"
                                OnClick="GoToBookings" />
             }
@@ -99,7 +100,7 @@
 
             if (payment is null)
             {
-                Error = "Payment creation failed.";
+                Error = L["Booking_PaymentCreationFailed"];
                 return;
             }
 

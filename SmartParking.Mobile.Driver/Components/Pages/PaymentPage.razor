@@ -3,16 +3,17 @@
 @inject PaymentsApiClient PaymentsApi
 @inject BookingsApiClient BookingsApi
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <DriverAuthGuard>
 
-    <PageHeader Title="Payment"
-                Subtitle="Confirm your payment to secure your booking."
+    <PageHeader Title="@L["Payment_Title"]"
+                Subtitle="@L["Payment_Subtitle"]"
                 ShowBackButton="true" />
 
     @if (IsLoading)
     {
-        <div class="card">Loading payment...</div>
+        <div class="card">@L["Payment_Loading"]</div>
     }
     else if (!string.IsNullOrWhiteSpace(Error))
     {
@@ -20,8 +21,8 @@
     }
     else if (Payment is null)
     {
-        <EmptyState Title="Payment not found"
-                    Message="Unable to load this payment." />
+        <EmptyState Title="@L["Payment_NotFoundTitle"]"
+                    Message="@L["Payment_NotFoundMessage"]" />
     }
     else
     {
@@ -34,14 +35,14 @@
 
         @if (Payment.Status == "pending")
         {
-            <PrimaryButton Text="Confirm Payment"
+            <PrimaryButton Text="@L["Payment_Confirm"]"
                            Variant="success"
                            Disabled="@IsConfirming"
                            OnClick="ConfirmAsync" />
         }
         else
         {
-            <PrimaryButton Text="View My Bookings"
+            <PrimaryButton Text="@L["Payment_ViewBookings"]"
                            OnClick="GoToBookings" />
         }
     }

@@ -6,21 +6,22 @@
 @inject DriverSession DriverSession
 @inject DriverAuthStateService AuthState
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
-<PageHeader Title="Parking Details"
-            Subtitle="Review details and confirm your reservation."
+<PageHeader Title="@L["ParkingDetails_Title"]"
+            Subtitle="@L["ParkingDetails_Subtitle"]"
             ShowBackButton="true" />
 
 <ErrorBanner Message="@Error" />
 
 @if (IsLoading)
 {
-    <div class="card">Loading parking...</div>
+    <div class="card">@L["ParkingDetails_Loading"]</div>
 }
 else if (Parking is null)
 {
-    <EmptyState Title="Parking not found"
-                Message="Unable to load this parking." />
+    <EmptyState Title="@L["ParkingDetails_NotFoundTitle"]"
+                Message="@L["ParkingDetails_NotFoundMessage"]" />
 }
 else
 {
@@ -29,36 +30,37 @@ else
         <div class="muted">@Parking.Address</div>
 
         <div class="section">
-            <StatusBadge Text="@Parking.Status" />
+            <StatusBadge Text="@Parking.Status"
+                         Label="@StatusMapper.MapParkingStatus(Parking.Status, L)" />
         </div>
 
         <div class="meta-grid">
             <div class="meta-box">
-                <div class="meta-label">Available</div>
+                <div class="meta-label">@L["ParkingDetails_Available"]</div>
                 <div class="meta-value">@Parking.AvailableCount / @Parking.TotalCapacity</div>
             </div>
 
             <div class="meta-box">
-                <div class="meta-label">Rate</div>
+                <div class="meta-label">@L["ParkingDetails_Rate"]</div>
                 <div class="meta-value">@Parking.HourlyRate @Parking.Currency</div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-title">Adjust Time</div>
+        <div class="card-title">@L["ParkingDetails_AdjustTime"]</div>
 
         <div class="field">
-            <label class="label">Start</label>
+            <label class="label">@L["ParkingDetails_Start"]</label>
             <input class="input" type="datetime-local" @bind="StartLocal" />
         </div>
 
         <div class="field">
-            <label class="label">End</label>
+            <label class="label">@L["ParkingDetails_End"]</label>
             <input class="input" type="datetime-local" @bind="EndLocal" />
         </div>
 
-        <PrimaryButton Text="Recalculate Quote"
+        <PrimaryButton Text="@L["ParkingDetails_RecalculateQuote"]"
                        Variant="secondary"
                        Disabled="@IsRecalculating"
                        OnClick="RecalculateQuoteAsync" />
@@ -67,33 +69,33 @@ else
     @if (Quote is not null)
     {
         <div class="card">
-            <div class="card-title">Quote</div>
+            <div class="card-title">@L["ParkingDetails_QuoteTitle"]</div>
 
             <div class="meta-grid">
                 <div class="meta-box">
-                    <div class="meta-label">Start</div>
+                    <div class="meta-label">@L["ParkingDetails_Start"]</div>
                     <div class="meta-value">@FormatDate(SearchState.StartTime)</div>
                 </div>
 
                 <div class="meta-box">
-                    <div class="meta-label">End</div>
+                    <div class="meta-label">@L["ParkingDetails_End"]</div>
                     <div class="meta-value">@FormatDate(SearchState.EndTime)</div>
                 </div>
 
                 <div class="meta-box">
-                    <div class="meta-label">Hours</div>
+                    <div class="meta-label">@L["ParkingDetails_Hours"]</div>
                     <div class="meta-value">@Quote.BillableHours</div>
                 </div>
 
                 <div class="meta-box">
-                    <div class="meta-label">Total</div>
+                    <div class="meta-label">@L["ParkingDetails_Total"]</div>
                     <div class="meta-value">@Quote.EstimatedPrice @Quote.Currency</div>
                 </div>
             </div>
         </div>
     }
 
-    <PrimaryButton Text="Reserve Parking"
+    <PrimaryButton Text="@L["ParkingDetails_Reserve"]"
                    Disabled="@(IsBooking || Quote is null)"
                    OnClick="ReserveAsync" />
 }
@@ -146,7 +148,7 @@ else
 
             if (SearchState.EndTime <= SearchState.StartTime)
             {
-                Error = "End time must be greater than start time.";
+                Error = L["ParkingDetails_EndAfterStart"];
                 Quote = null;
                 return;
             }
@@ -190,7 +192,7 @@ else
 
             if (booking is null)
             {
-                Error = "Booking creation failed.";
+                Error = L["ParkingDetails_BookingCreationFailed"];
                 return;
             }
 

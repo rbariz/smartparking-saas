@@ -3,32 +3,34 @@
 @inject ParkingsApiClient ParkingsApi
 @inject SearchState SearchState
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
-<PageHeader Title="Available Parking"
-            Subtitle="Find the best option for your trip." ShowBackButton="true" />
+<PageHeader Title="@L["Results_Title"]"
+            Subtitle="@L["Results_Subtitle"]"
+            ShowBackButton="true" />
 
 <div class="toggle-group">
     <div class="toggle @(SortMode == "distance" ? "toggle-active" : "")"
          @onclick="() => SetSort(ldistance)">
-        Distance
+        @L["Results_Distance"]
     </div>
 
     <div class="toggle @(SortMode == "price" ? "toggle-active" : "")"
          @onclick="() => SetSort(lprice)">
-        Price
+        @L["Results_Price"]
     </div>
 </div>
 
 <div class="toggle-group">
     <div class="toggle @(OpenOnly ? "toggle-active" : "")"
          @onclick="ToggleOpenOnly">
-        Open only
+        @L["Results_OpenOnly"]
     </div>
 </div>
 
 @if (IsLoading)
 {
-    <div class="card">Loading...</div>
+    <div class="card">@L["Results_Loading"]</div>
 }
 else if (!string.IsNullOrWhiteSpace(Error))
 {
@@ -36,8 +38,8 @@ else if (!string.IsNullOrWhiteSpace(Error))
 }
 else if (FilteredItems.Count == 0)
 {
-    <EmptyState Title="No results"
-                Message="Try adjusting your filters." />
+    <EmptyState Title="@L["Results_NoResults"]"
+                Message="@L["Results_AdjustFilters"]" />
 }
 else
 {
@@ -47,9 +49,8 @@ else
     }
 }
 
-
 @code {
-    
+
     private string lprice = "price";
     private string ldistance = "distance";
 
@@ -68,31 +69,29 @@ else
         {
             var request = new ParkingSearchRequest(
                 SearchState.Latitude,
-                        SearchState.Longitude,
-                        SearchState.RadiusMeters,
-                        SearchState.StartTime,
-                        SearchState.EndTime,
-                        OpenOnly,
-                        SortMode);
+                SearchState.Longitude,
+                SearchState.RadiusMeters,
+                SearchState.StartTime,
+                SearchState.EndTime,
+                OpenOnly,
+                SortMode);
 
             var result = await ParkingsApi.SearchAsync(request);
 
-            AllItems = result
-    .Select(x => new ParkingSearchListItemVm
-    {
-        ParkingId = x.ParkingId,
-        Name = x.Name,
-        Address = x.Address,
-        Status = x.Status,
-        AvailableCount = x.AvailableCount,
-        TotalCapacity = x.TotalCapacity,
-        HourlyRate = x.HourlyRate,
-        Currency = x.Currency,
-        EstimatedPrice = x.EstimatedPrice,
-        DistanceKm = x.DistanceMeters / 1000.0,
-        DistanceLabel = UiFormatters.DistanceFromMeters(x.DistanceMeters)
-    })
-    .ToList();
+            AllItems = result.Select(x => new ParkingSearchListItemVm
+            {
+                ParkingId = x.ParkingId,
+                Name = x.Name,
+                Address = x.Address,
+                Status = x.Status,
+                AvailableCount = x.AvailableCount,
+                TotalCapacity = x.TotalCapacity,
+                HourlyRate = x.HourlyRate,
+                Currency = x.Currency,
+                EstimatedPrice = x.EstimatedPrice,
+                DistanceKm = x.DistanceMeters / 1000.0,
+                DistanceLabel = UiFormatters.DistanceFromMeters(x.DistanceMeters)
+            }).ToList();
 
             ApplyFilters();
         }
@@ -135,7 +134,6 @@ else
 
         var list = items.ToList();
 
-        // Reset highlights
         foreach (var item in list)
         {
             item.IsBestOption = false;

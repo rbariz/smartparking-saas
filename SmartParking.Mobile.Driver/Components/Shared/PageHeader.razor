@@ -1,9 +1,12 @@
 ﻿@inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <div class="page-header">
     @if (ShowBackButton)
     {
-        <button class="back-btn" @onclick="GoBack">← Back</button>
+        <button class="back-btn" @onclick="GoBack">
+            ← @L["Common_Back"]
+        </button>
     }
 
     <h1 class="page-title">@Title</h1>

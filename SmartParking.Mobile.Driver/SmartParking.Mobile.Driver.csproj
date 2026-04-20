@@ -20,6 +20,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
         <Nullable>enable</Nullable>
+		<NeutralLanguage>fr-FR</NeutralLanguage>
 
         <!-- Display name -->
         <ApplicationTitle>SmartParking.Mobile.Driver</ApplicationTitle>
@@ -59,6 +60,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.26" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="11.0.0-preview.3.26207.106" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
@@ -67,6 +69,21 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SmartParking.Contracts\SmartParking.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Resources\AppResources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>AppResources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Resources\AppResources.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

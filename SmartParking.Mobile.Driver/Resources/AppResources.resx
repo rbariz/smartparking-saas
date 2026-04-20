@@ -1,0 +1,662 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+	<data name="Profile_Title" xml:space="preserve">
+  <value>My Profile</value>
+</data>
+
+	<data name="Profile_Subtitle" xml:space="preserve">
+  <value>Driver account information.</value>
+</data>
+
+	<data name="Profile_Account" xml:space="preserve">
+  <value>Account</value>
+</data>
+
+	<data name="Profile_Name" xml:space="preserve">
+  <value>Name</value>
+</data>
+
+	<data name="Profile_Phone" xml:space="preserve">
+  <value>Phone</value>
+</data>
+
+	<data name="Profile_Email" xml:space="preserve">
+  <value>Email</value>
+</data>
+
+	<data name="Profile_Language" xml:space="preserve">
+  <value>Language</value>
+</data>
+
+	<data name="Profile_SelectLanguage" xml:space="preserve">
+  <value>Select language</value>
+</data>
+
+	<data name="Profile_Actions" xml:space="preserve">
+  <value>Actions</value>
+</data>
+
+	<data name="Profile_ChangePhone" xml:space="preserve">
+  <value>Change phone</value>
+</data>
+
+	<data name="Profile_Logout" xml:space="preserve">
+  <value>Log out</value>
+</data>
+	<data name="Nav_Search" xml:space="preserve">
+  <value>Search</value>
+</data>
+
+	<data name="Nav_Bookings" xml:space="preserve">
+  <value>My Bookings</value>
+</data>
+
+	<data name="Nav_Profile" xml:space="preserve">
+  <value>Profile</value>
+</data>
+	<data name="Search_Title" xml:space="preserve">
+  <value>Find Parking</value>
+</data>
+
+	<data name="Search_Subtitle" xml:space="preserve">
+  <value>Quickly search nearby parking spots.</value>
+</data>
+
+	<data name="Search_Location" xml:space="preserve">
+  <value>Location</value>
+</data>
+
+	<data name="Search_UseMyLocation" xml:space="preserve">
+  <value>Use my location</value>
+</data>
+
+	<data name="Search_GettingLocation" xml:space="preserve">
+  <value>Getting location...</value>
+</data>
+
+	<data name="Search_Lat" xml:space="preserve">
+  <value>Lat</value>
+</data>
+
+	<data name="Search_Lng" xml:space="preserve">
+  <value>Lng</value>
+</data>
+
+	<data name="Search_QuickDuration" xml:space="preserve">
+  <value>Quick Duration</value>
+</data>
+
+	<data name="Search_1Hour" xml:space="preserve">
+  <value>1 hour</value>
+</data>
+
+	<data name="Search_2Hours" xml:space="preserve">
+  <value>2 hours</value>
+</data>
+
+	<data name="Search_4Hours" xml:space="preserve">
+  <value>4 hours</value>
+</data>
+
+	<data name="Search_Start" xml:space="preserve">
+  <value>Start</value>
+</data>
+
+	<data name="Search_End" xml:space="preserve">
+  <value>End</value>
+</data>
+
+	<data name="Search_Radius" xml:space="preserve">
+  <value>Search Radius</value>
+</data>
+
+	<data name="Search_500m" xml:space="preserve">
+  <value>500 m</value>
+</data>
+
+	<data name="Search_1km" xml:space="preserve">
+  <value>1 km</value>
+</data>
+
+	<data name="Search_3km" xml:space="preserve">
+  <value>3 km</value>
+</data>
+
+	<data name="Search_CurrentRadius" xml:space="preserve">
+  <value>Current radius</value>
+</data>
+
+	<data name="Search_Action" xml:space="preserve">
+  <value>Search Parking</value>
+</data>
+
+	<data name="Search_LocationError" xml:space="preserve">
+  <value>Unable to get location.</value>
+</data>
+	<data name="Results_Title" xml:space="preserve">
+  <value>Available Parking</value>
+</data>
+
+	<data name="Results_Subtitle" xml:space="preserve">
+  <value>Find the best option for your trip.</value>
+</data>
+
+	<data name="Results_Distance" xml:space="preserve">
+  <value>Distance</value>
+</data>
+
+	<data name="Results_Price" xml:space="preserve">
+  <value>Price</value>
+</data>
+
+	<data name="Results_OpenOnly" xml:space="preserve">
+  <value>Open only</value>
+</data>
+
+	<data name="Results_Loading" xml:space="preserve">
+  <value>Loading...</value>
+</data>
+
+	<data name="Results_NoResults" xml:space="preserve">
+  <value>No results</value>
+</data>
+
+	<data name="Results_AdjustFilters" xml:space="preserve">
+  <value>Try adjusting your filters.</value>
+</data>
+	<data name="Booking_Title" xml:space="preserve">
+  <value>Booking</value>
+</data>
+
+	<data name="Booking_Subtitle" xml:space="preserve">
+  <value>Track the status of your reservation.</value>
+</data>
+
+	<data name="Booking_Loading" xml:space="preserve">
+  <value>Loading booking...</value>
+</data>
+
+	<data name="Booking_NotFoundTitle" xml:space="preserve">
+  <value>Booking not found</value>
+</data>
+
+	<data name="Booking_NotFoundMessage" xml:space="preserve">
+  <value>Unable to load this booking.</value>
+</data>
+
+	<data name="Booking_StatusTitle" xml:space="preserve">
+  <value>Status</value>
+</data>
+
+	<data name="Booking_Reference" xml:space="preserve">
+  <value>Booking reference</value>
+</data>
+
+	<data name="Booking_PayNow" xml:space="preserve">
+  <value>Pay Now</value>
+</data>
+
+	<data name="Booking_BackToBookings" xml:space="preserve">
+  <value>Back to My Bookings</value>
+</data>
+
+	<data name="Booking_PaymentCreationFailed" xml:space="preserve">
+  <value>Payment creation failed.</value>
+</data>
+	<data name="Payment_Title" xml:space="preserve">
+  <value>Payment</value>
+</data>
+
+	<data name="Payment_Subtitle" xml:space="preserve">
+  <value>Confirm your payment to secure your booking.</value>
+</data>
+
+	<data name="Payment_Loading" xml:space="preserve">
+  <value>Loading payment...</value>
+</data>
+
+	<data name="Payment_NotFoundTitle" xml:space="preserve">
+  <value>Payment not found</value>
+</data>
+
+	<data name="Payment_NotFoundMessage" xml:space="preserve">
+  <value>Unable to load this payment.</value>
+</data>
+
+	<data name="Payment_Confirm" xml:space="preserve">
+  <value>Confirm Payment</value>
+</data>
+
+	<data name="Payment_ViewBookings" xml:space="preserve">
+  <value>View My Bookings</value>
+</data>
+	<data name="ParkingDetails_Title" xml:space="preserve">
+  <value>Parking Details</value>
+</data>
+
+	<data name="ParkingDetails_Subtitle" xml:space="preserve">
+  <value>Review details and confirm your reservation.</value>
+</data>
+
+	<data name="ParkingDetails_Loading" xml:space="preserve">
+  <value>Loading parking...</value>
+</data>
+
+	<data name="ParkingDetails_NotFoundTitle" xml:space="preserve">
+  <value>Parking not found</value>
+</data>
+
+	<data name="ParkingDetails_NotFoundMessage" xml:space="preserve">
+  <value>Unable to load this parking.</value>
+</data>
+
+	<data name="ParkingDetails_Available" xml:space="preserve">
+  <value>Available</value>
+</data>
+
+	<data name="ParkingDetails_Rate" xml:space="preserve">
+  <value>Rate</value>
+</data>
+
+	<data name="ParkingDetails_AdjustTime" xml:space="preserve">
+  <value>Adjust Time</value>
+</data>
+
+	<data name="ParkingDetails_Start" xml:space="preserve">
+  <value>Start</value>
+</data>
+
+	<data name="ParkingDetails_End" xml:space="preserve">
+  <value>End</value>
+</data>
+
+	<data name="ParkingDetails_RecalculateQuote" xml:space="preserve">
+  <value>Recalculate Quote</value>
+</data>
+
+	<data name="ParkingDetails_QuoteTitle" xml:space="preserve">
+  <value>Quote</value>
+</data>
+
+	<data name="ParkingDetails_Hours" xml:space="preserve">
+  <value>Hours</value>
+</data>
+
+	<data name="ParkingDetails_Total" xml:space="preserve">
+  <value>Total</value>
+</data>
+
+	<data name="ParkingDetails_Reserve" xml:space="preserve">
+  <value>Reserve Parking</value>
+</data>
+
+	<data name="ParkingDetails_EndAfterStart" xml:space="preserve">
+  <value>End time must be greater than start time.</value>
+</data>
+
+	<data name="ParkingDetails_BookingCreationFailed" xml:space="preserve">
+  <value>Booking creation failed.</value>
+</data>
+	<data name="MyBookings_Title" xml:space="preserve">
+  <value>My Bookings</value>
+</data>
+
+	<data name="MyBookings_Subtitle" xml:space="preserve">
+  <value>Track your reservations and continue pending payments.</value>
+</data>
+
+	<data name="MyBookings_Loading" xml:space="preserve">
+  <value>Loading bookings...</value>
+</data>
+
+	<data name="MyBookings_EmptyTitle" xml:space="preserve">
+  <value>No bookings yet</value>
+</data>
+
+	<data name="MyBookings_EmptyMessage" xml:space="preserve">
+  <value>Your reservations will appear here.</value>
+</data>
+
+	<data name="MyBookings_Payment" xml:space="preserve">
+  <value>Payment</value>
+</data>
+
+	<data name="MyBookings_Start" xml:space="preserve">
+  <value>Start</value>
+</data>
+
+	<data name="MyBookings_End" xml:space="preserve">
+  <value>End</value>
+</data>
+
+	<data name="MyBookings_Price" xml:space="preserve">
+  <value>Price</value>
+</data>
+
+	<data name="MyBookings_PayNow" xml:space="preserve">
+  <value>Pay Now</value>
+</data>
+
+	<data name="MyBookings_ConfirmPayment" xml:space="preserve">
+  <value>Confirm Payment</value>
+</data>
+
+	<data name="MyBookings_ViewBooking" xml:space="preserve">
+  <value>View Booking</value>
+</data>
+
+	<data name="MyBookings_InvalidSession" xml:space="preserve">
+  <value>Driver session is invalid.</value>
+</data>
+	<data name="Auth_Title" xml:space="preserve">
+  <value>Sign In</value>
+</data>
+
+	<data name="Auth_Subtitle" xml:space="preserve">
+  <value>Enter your phone number to receive a code</value>
+</data>
+
+	<data name="Auth_DebugOtpTitle" xml:space="preserve">
+  <value>Debug OTP</value>
+</data>
+
+	<data name="Auth_KnownPhoneMessage" xml:space="preserve">
+  <value>This phone number is already associated with your account. An OTP code will be sent to this number.</value>
+</data>
+
+	<data name="Auth_ChangePhone" xml:space="preserve">
+  <value>Change phone</value>
+</data>
+
+	<data name="Auth_Phone" xml:space="preserve">
+  <value>Phone</value>
+</data>
+
+	<data name="Auth_SendCode" xml:space="preserve">
+  <value>Send code</value>
+</data>
+
+	<data name="Auth_PhoneRequired" xml:space="preserve">
+  <value>Please enter a phone number.</value>
+</data>
+	<data name="VerifyOtp_Title" xml:space="preserve">
+  <value>Verification</value>
+</data>
+
+	<data name="VerifyOtp_Subtitle" xml:space="preserve">
+  <value>Enter the code you received</value>
+</data>
+
+	<data name="VerifyOtp_DebugTitle" xml:space="preserve">
+  <value>Debug OTP</value>
+</data>
+
+	<data name="VerifyOtp_DebugMessage" xml:space="preserve">
+  <value>Code returned by the API:</value>
+</data>
+
+	<data name="VerifyOtp_Phone" xml:space="preserve">
+  <value>Phone</value>
+</data>
+
+	<data name="VerifyOtp_Name" xml:space="preserve">
+  <value>Name</value>
+</data>
+
+	<data name="VerifyOtp_NamePlaceholder" xml:space="preserve">
+  <value>Your name</value>
+</data>
+
+	<data name="VerifyOtp_Code" xml:space="preserve">
+  <value>OTP Code</value>
+</data>
+
+	<data name="VerifyOtp_CodePlaceholder" xml:space="preserve">
+  <value>Enter OTP code</value>
+</data>
+
+	<data name="VerifyOtp_Action" xml:space="preserve">
+  <value>Verify</value>
+</data>
+
+	<data name="VerifyOtp_PhoneRequired" xml:space="preserve">
+  <value>Phone is required.</value>
+</data>
+
+	<data name="VerifyOtp_CodeRequired" xml:space="preserve">
+  <value>Code is required.</value>
+</data>
+	<data name="PaymentSummary_Title" xml:space="preserve">
+  <value>Payment</value>
+</data>
+
+	<data name="PaymentSummary_Method" xml:space="preserve">
+  <value>Method</value>
+</data>
+
+	<data name="PaymentSummary_Amount" xml:space="preserve">
+  <value>Amount</value>
+</data>
+	<data name="Common_Back" xml:space="preserve">
+  <value>Back</value>
+</data>
+
+	<data name="ParkingCard_Full" xml:space="preserve">
+  <value>Full</value>
+</data>
+
+	<data name="ParkingCard_BestOption" xml:space="preserve">
+  <value>Best option</value>
+</data>
+
+	<data name="ParkingCard_Cheapest" xml:space="preserve">
+  <value>Cheapest</value>
+</data>
+
+	<data name="ParkingCard_Distance" xml:space="preserve">
+  <value>Distance</value>
+</data>
+
+	<data name="ParkingCard_Available" xml:space="preserve">
+  <value>Available</value>
+</data>
+
+	<data name="ParkingCard_Rate" xml:space="preserve">
+  <value>Rate</value>
+</data>
+
+	<data name="ParkingCard_Estimated" xml:space="preserve">
+  <value>Estimated</value>
+</data>
+
+	<data name="ParkingCard_ViewParking" xml:space="preserve">
+  <value>View Parking</value>
+</data>
+	<data name="BookingSummary_Title" xml:space="preserve">
+  <value>Booking Summary</value>
+</data>
+
+	<data name="BookingSummary_Start" xml:space="preserve">
+  <value>Start</value>
+</data>
+
+	<data name="BookingSummary_End" xml:space="preserve">
+  <value>End</value>
+</data>
+
+	<data name="BookingSummary_Expires" xml:space="preserve">
+  <value>Expires</value>
+</data>
+
+	<data name="BookingSummary_Price" xml:space="preserve">
+  <value>Price</value>
+</data>
+	<data name="Status_Open" xml:space="preserve">
+  <value>Open</value>
+</data>
+
+	<data name="Status_Closed" xml:space="preserve">
+  <value>Closed</value>
+</data>
+
+	<data name="Status_Full" xml:space="preserve">
+  <value>Full</value>
+</data>
+
+	<data name="BookingStatus_PendingPayment" xml:space="preserve">
+  <value>Pending payment</value>
+</data>
+
+	<data name="BookingStatus_Confirmed" xml:space="preserve">
+  <value>Confirmed</value>
+</data>
+
+	<data name="BookingStatus_Active" xml:space="preserve">
+  <value>Active</value>
+</data>
+
+	<data name="BookingStatus_Completed" xml:space="preserve">
+  <value>Completed</value>
+</data>
+
+	<data name="BookingStatus_Cancelled" xml:space="preserve">
+  <value>Cancelled</value>
+</data>
+
+	<data name="BookingStatus_Expired" xml:space="preserve">
+  <value>Expired</value>
+</data>
+
+	<data name="PaymentStatus_Pending" xml:space="preserve">
+  <value>Pending</value>
+</data>
+
+	<data name="PaymentStatus_Paid" xml:space="preserve">
+  <value>Paid</value>
+</data>
+
+	<data name="PaymentStatus_Failed" xml:space="preserve">
+  <value>Failed</value>
+</data>
+
+	<data name="PaymentStatus_Cancelled" xml:space="preserve">
+  <value>Cancelled</value>
+</data>
+</root>

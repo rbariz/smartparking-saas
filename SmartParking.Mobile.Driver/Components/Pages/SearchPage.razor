@@ -4,17 +4,21 @@
 @inject SearchState SearchState
 @inject LocationService LocationService
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
-<PageHeader Title="Find Parking"
-            Subtitle="Quickly search nearby parking spots." ShowBackButton="false" />
+<PageHeader Title="@L["Search_Title"]"
+            Subtitle="@L["Search_Subtitle"]"
+            ShowBackButton="false" />
 
 <ErrorBanner Message="@Error" />
 
+@System.Globalization.CultureInfo.CurrentUICulture.Name
+@L["Search_Title"]
+@L["Search_Action"]
 <div class="card">
 
-    <!-- LOCATION -->
     <div class="section">
-        <div class="label">Location</div>
+        <div class="label">@L["Search_Location"]</div>
 
         <PrimaryButton Text="@LocationButtonText"
                        Variant="secondary"
@@ -22,51 +26,45 @@
                        OnClick="UseMyLocationAsync" />
 
         <div class="muted" style="margin-top:6px;">
-            Lat: @SearchState.Latitude | Lng: @SearchState.Longitude
+            @L["Search_Lat"]: @SearchState.Latitude | @L["Search_Lng"]: @SearchState.Longitude
         </div>
     </div>
 
-    <!-- TIME PRESETS -->
     <div class="section">
-        <div class="label">Quick Duration</div>
+        <div class="label">@L["Search_QuickDuration"]</div>
 
         <div class="chips">
-            <div class="chip" @onclick="() => ApplyPreset(1)">1 hour</div>
-            <div class="chip" @onclick="() => ApplyPreset(2)">2 hours</div>
-            <div class="chip" @onclick="() => ApplyPreset(4)">4 hours</div>
+            <div class="chip" @onclick="() => ApplyPreset(1)">@L["Search_1Hour"]</div>
+            <div class="chip" @onclick="() => ApplyPreset(2)">@L["Search_2Hours"]</div>
+            <div class="chip" @onclick="() => ApplyPreset(4)">@L["Search_4Hours"]</div>
         </div>
     </div>
 
-    <!-- TIME INPUT -->
     <div class="section">
-
         <div class="field">
-            <label class="label">Start</label>
+            <label class="label">@L["Search_Start"]</label>
             <input class="input" type="datetime-local" @bind="StartLocal" />
         </div>
 
         <div class="field">
-            <label class="label">End</label>
+            <label class="label">@L["Search_End"]</label>
             <input class="input" type="datetime-local" @bind="EndLocal" />
         </div>
-
     </div>
 
-    <!-- RADIUS -->
     <div class="section">
-        <div class="label">Search Radius</div>
+        <div class="label">@L["Search_Radius"]</div>
 
         <div class="chips">
-            <div class="chip" @onclick="() => SetRadius(500)">500m</div>
-            <div class="chip" @onclick="() => SetRadius(1000)">1 km</div>
-            <div class="chip" @onclick="() => SetRadius(3000)">3 km</div>
+            <div class="chip" @onclick="() => SetRadius(500)">@L["Search_500m"]</div>
+            <div class="chip" @onclick="() => SetRadius(1000)">@L["Search_1km"]</div>
+            <div class="chip" @onclick="() => SetRadius(3000)">@L["Search_3km"]</div>
         </div>
 
-        <div class="muted">Current: @SearchState.RadiusMeters m</div>
+        <div class="muted">@L["Search_CurrentRadius"]: @SearchState.RadiusMeters m</div>
     </div>
 
-    <!-- ACTION -->
-    <PrimaryButton Text="Search Parking"
+    <PrimaryButton Text="@L["Search_Action"]"
                    Disabled="@(!CanSearch)"
                    OnClick="OnSearch" />
 
@@ -77,7 +75,7 @@
     private bool IsLocating;
 
     private string LocationButtonText =>
-        IsLocating ? "Getting location..." : "Use my location";
+        IsLocating ? L["Search_GettingLocation"] : L["Search_UseMyLocation"];
 
     private bool CanSearch =>
         SearchState.Latitude != 0 &&
@@ -86,7 +84,6 @@
 
     protected override void OnInitialized()
     {
-        // Auto defaults (first load only)
         if (SearchState.StartTime < DateTime.UtcNow)
         {
             SearchState.StartTime = DateTime.UtcNow.AddMinutes(10);
@@ -117,7 +114,7 @@
 
             if (location is null)
             {
-                Error = "Unable to get location.";
+                Error = L["Search_LocationError"];
                 return;
             }
 

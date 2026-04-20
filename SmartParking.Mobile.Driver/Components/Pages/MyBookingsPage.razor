@@ -3,16 +3,17 @@
 @inject BookingsApiClient BookingsApi
 @inject DriverSession DriverSession
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <DriverAuthGuard>
 
-    <PageHeader Title="My Bookings"
-                Subtitle="Track your reservations and continue pending payments."
+    <PageHeader Title="@L["MyBookings_Title"]"
+                Subtitle="@L["MyBookings_Subtitle"]"
                 ShowBackButton="true" />
 
     @if (IsLoading)
     {
-        <div class="card">Loading bookings...</div>
+        <div class="card">@L["MyBookings_Loading"]</div>
     }
     else if (!string.IsNullOrWhiteSpace(Error))
     {
@@ -20,8 +21,8 @@
     }
     else if (Items.Count == 0)
     {
-        <EmptyState Title="No bookings yet"
-                    Message="Your reservations will appear here." />
+        <EmptyState Title="@L["MyBookings_EmptyTitle"]"
+                    Message="@L["MyBookings_EmptyMessage"]" />
     }
     else
     {
@@ -30,30 +31,32 @@
             <div class="card">
                 <div class="stack-sm">
                     <div class="card-title">@item.ParkingName</div>
-                    <StatusBadge Text="@item.Status" />
+                    <StatusBadge Text="@item.Status"
+                                 Label="@StatusMapper.MapBookingStatus(item.Status, L)" />
 
                     @if (!string.IsNullOrWhiteSpace(item.PaymentStatus))
                     {
                         <div style="margin-top:6px;">
-                            <span class="muted">Payment:</span>
-                            <StatusBadge Text="@item.PaymentStatus" />
+                            <span class="muted">@L["MyBookings_Payment"]:</span>
+                            <StatusBadge Text="@item.PaymentStatus"
+                                         Label="@StatusMapper.MapPaymentStatus(item.PaymentStatus, L)" />
                         </div>
                     }
                 </div>
 
                 <div class="meta-grid">
                     <div class="meta-box">
-                        <div class="meta-label">Start</div>
+                        <div class="meta-label">@L["MyBookings_Start"]</div>
                         <div class="meta-value">@UiFormatters.DateTimeShort(item.StartTime)</div>
                     </div>
 
                     <div class="meta-box">
-                        <div class="meta-label">End</div>
+                        <div class="meta-label">@L["MyBookings_End"]</div>
                         <div class="meta-value">@UiFormatters.DateTimeShort(item.EndTime)</div>
                     </div>
 
                     <div class="meta-box" style="grid-column: 1 / -1;">
-                        <div class="meta-label">Price</div>
+                        <div class="meta-label">@L["MyBookings_Price"]</div>
                         <div class="meta-value">@UiFormatters.Money(item.ReservedPrice, item.PriceCurrency)</div>
                     </div>
                 </div>
@@ -61,18 +64,18 @@
                 <div style="margin-top:14px;" class="stack-sm">
                     @if (item.Status == "pending_payment" && item.PaymentId is null)
                     {
-                        <PrimaryButton Text="Pay Now"
+                        <PrimaryButton Text="@L["MyBookings_PayNow"]"
                                        OnClick="@(() => GoToBooking(item.Id))" />
                     }
                     else if (item.Status == "pending_payment" && item.PaymentId is not null && item.PaymentStatus == "pending")
                     {
-                        <PrimaryButton Text="Confirm Payment"
+                        <PrimaryButton Text="@L["MyBookings_ConfirmPayment"]"
                                        Variant="success"
                                        OnClick="@(() => GoToPayment(item.PaymentId!.Value))" />
                     }
                     else
                     {
-                        <PrimaryButton Text="View Booking"
+                        <PrimaryButton Text="@L["MyBookings_ViewBooking"]"
                                        Variant="secondary"
                                        OnClick="@(() => GoToBooking(item.Id))" />
                     }
@@ -102,7 +105,7 @@
 
             if (DriverSession.DriverId == Guid.Empty)
             {
-                Error = "Driver session is invalid.";
+                Error = L["MyBookings_InvalidSession"];
                 return;
             }
 

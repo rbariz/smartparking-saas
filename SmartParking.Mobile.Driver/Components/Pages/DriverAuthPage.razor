@@ -4,16 +4,17 @@
 @inject DriverAuthStateService AuthState
 @inject DriverSession DriverSession
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
-<PageHeader Title="Connexion"
-            Subtitle="Entrez votre numéro pour recevoir un code" />
+<PageHeader Title="@L["Auth_Title"]"
+            Subtitle="@L["Auth_Subtitle"]" />
 
 <ErrorBanner Message="@ErrorMessage" />
 
 @if (AppEnvironment.IsDev && !string.IsNullOrWhiteSpace(DebugOtpMessage))
 {
     <div class="card">
-        <div class="card-title">Debug OTP</div>
+        <div class="card-title">@L["Auth_DebugOtpTitle"]</div>
         <div class="muted">@DebugOtpMessage</div>
     </div>
 }
@@ -22,11 +23,11 @@
     @if (IsPhoneLocked)
     {
         <div class="muted">
-            Numéro déjà associé à votre compte. Un code OTP sera envoyé à ce numéro.
+            @L["Auth_KnownPhoneMessage"]
         </div>
 
         <div style="margin-top:10px;">
-            <PrimaryButton Text="Changer de numéro"
+            <PrimaryButton Text="@L["Auth_ChangePhone"]"
                            Variant="secondary"
                            OnClick="ChangePhoneAsync"
                            Disabled="@IsBusy" />
@@ -34,14 +35,14 @@
     }
 
     <div class="field">
-        <label class="label">Téléphone</label>
+        <label class="label">@L["Auth_Phone"]</label>
         <input class="input"
                @bind="Phone"
                placeholder="06XXXXXXXX"
                disabled="@IsPhoneLocked" />
     </div>
 
-    <PrimaryButton Text="Envoyer le code"
+    <PrimaryButton Text="@L["Auth_SendCode"]"
                    OnClick="SendOtpAsync"
                    Disabled="@IsBusy" />
 </div>
@@ -74,7 +75,6 @@
         DebugOtpMessage = null;
 
         AuthState.SignOut();
-
         Phone = string.Empty;
 
         await InvokeAsync(StateHasChanged);
@@ -87,7 +87,7 @@
 
         if (string.IsNullOrWhiteSpace(Phone))
         {
-            ErrorMessage = "Veuillez saisir un numéro.";
+            ErrorMessage = L["Auth_PhoneRequired"];
             return;
         }
 

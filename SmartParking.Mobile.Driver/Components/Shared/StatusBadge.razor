@@ -1,9 +1,10 @@
-﻿<span class="@CssClass">@TextLabel</span>
+﻿<span class="@CssClass">@DisplayText</span>
 
 @code {
-    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public string Text { get; set; } = string.Empty;     // valeur brute (API)
+    [Parameter] public string? Label { get; set; }                   // valeur traduite (UI)
 
-    private string CssClass => Text switch
+    private string CssClass => Text?.Trim().ToLowerInvariant() switch
     {
         "open" => "badge badge-open",
         "confirmed" => "badge badge-confirmed",
@@ -20,5 +21,8 @@
         _ => "badge"
     };
 
-    private string TextLabel => Text.Replace("_", " ");
+    private string DisplayText =>
+        !string.IsNullOrWhiteSpace(Label)
+            ? Label
+            : Text.Replace("_", " ");
 }

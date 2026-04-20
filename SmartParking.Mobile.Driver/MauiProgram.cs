@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using SmartParking.Mobile.Driver.Services;
 using SmartParking.Mobile.Driver.Services.Api;
+using System.Globalization;
 
 namespace SmartParking.Mobile.Driver;
 
@@ -10,6 +11,13 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
+        var savedLanguage = Preferences.Default.Get("app_language", "fr");
+        var culture = new CultureInfo(savedLanguage);
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+
         builder
             .UseMauiApp<App>()
             .ConfigureFonts(fonts =>
@@ -19,6 +27,8 @@ public static class MauiProgram
             });
 
         builder.Services.AddMauiBlazorWebView();
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
@@ -47,7 +57,7 @@ public static class MauiProgram
                 BaseAddress = new Uri(settings.BaseUrl)
             };
         });
-
+        builder.Services.AddSingleton<LanguageService>();
         builder.Services.AddScoped<ParkingsApiClient>();
         builder.Services.AddScoped<BookingsApiClient>();
         builder.Services.AddScoped<PaymentsApiClient>();
@@ -59,6 +69,7 @@ public static class MauiProgram
 
 
         var mauiApp = builder.Build();
+
 
         var driverSession = mauiApp.Services.GetRequiredService<DriverSession>();
         var driverPreferences = mauiApp.Services.GetRequiredService<DriverPreferencesService>();
@@ -81,6 +92,10 @@ public static class MauiProgram
         {
             driverSession.Clear();
         }
+
+        // var culture = new CultureInfo("en"); // ou "en"
+        // CultureInfo.DefaultThreadCurrentCulture = culture;
+        // CultureInfo.DefaultThreadCurrentUICulture = culture;
 
         return mauiApp;
     }

@@ -2,45 +2,75 @@
 
 @inject DriverSession DriverSession
 @inject DriverAuthStateService AuthState
+@inject LanguageService LanguageService
 @inject NavigationManager Nav
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <DriverAuthGuard>
 
-    <PageHeader Title="Mon Profil"
-                Subtitle="Informations du compte conducteur."
+    <PageHeader Title="@L["Profile_Title"]"
+                Subtitle="@L["Profile_Subtitle"]"
                 ShowBackButton="true" />
 
     <div class="card">
-        <div class="card-title">Compte</div>
+        <div class="card-title">@L["Profile_Account"]</div>
 
         <div class="field">
-            <label class="label">Nom</label>
+            <label class="label">@L["Profile_Name"]</label>
             <div>@(string.IsNullOrWhiteSpace(DriverSession.DriverName) ? "-" : DriverSession.DriverName)</div>
         </div>
 
         <div class="field">
-            <label class="label">Téléphone</label>
+            <label class="label">@L["Profile_Phone"]</label>
             <div>@(string.IsNullOrWhiteSpace(DriverSession.Phone) ? "-" : DriverSession.Phone)</div>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(DriverSession.Email))
         {
             <div class="field">
-                <label class="label">Email</label>
+                <label class="label">@L["Profile_Email"]</label>
                 <div>@DriverSession.Email</div>
             </div>
         }
     </div>
 
     <div class="card">
-        <div class="card-title">Actions</div>
+        <div class="card-title">@L["Profile_Language"]</div>
+
+        <div class="field">
+            <label class="label">@L["Profile_SelectLanguage"]</label>
+
+            <div class="stack-sm">
+                <label>
+                    <input type="radio"
+                           name="language"
+                           value="fr"
+                           checked="@(_selectedLanguage == "fr")"
+                           @onchange="OnLanguageChanged" />
+                    Français
+                </label>
+
+                <label>
+                    <input type="radio"
+                           name="language"
+                           value="en"
+                           checked="@(_selectedLanguage == "en")"
+                           @onchange="OnLanguageChanged" />
+                    English
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">@L["Profile_Actions"]</div>
 
         <div class="stack-sm">
-            <PrimaryButton Text="Changer de numéro"
+            <PrimaryButton Text="@L["Profile_ChangePhone"]"
                            Variant="secondary"
                            OnClick="ChangePhoneAsync" />
 
-            <PrimaryButton Text="Se déconnecter"
+            <PrimaryButton Text="@L["Profile_Logout"]"
                            Variant="secondary"
                            OnClick="LogoutAsync" />
         </div>
@@ -49,6 +79,13 @@
 </DriverAuthGuard>
 
 @code {
+    private string _selectedLanguage = "fr";
+
+    protected override void OnInitialized()
+    {
+        _selectedLanguage = LanguageService.CurrentLanguage is "en" ? "en" : "fr";
+    }
+
     private Task ChangePhoneAsync()
     {
         AuthState.SignOut();
@@ -60,6 +97,20 @@
     {
         AuthState.SignOut();
         Nav.NavigateTo("/search");
+        return Task.CompletedTask;
+    }
+
+    private Task OnLanguageChanged(ChangeEventArgs e)
+    {
+        var selected = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(selected))
+            return Task.CompletedTask;
+
+        _selectedLanguage = selected;
+        LanguageService.SetLanguage(selected);
+
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
         return Task.CompletedTask;
     }
 }

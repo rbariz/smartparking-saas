@@ -1,19 +1,22 @@
-﻿
+﻿@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
+
+
 <div class="card">
-    <div class="card-title">Payment</div>
+    <div class="card-title">@L["PaymentSummary_Title"]</div>
 
     <div class="section">
-        <StatusBadge Text="@Payment.Status" />
+        <StatusBadge Text="@Payment.Status"
+                     Label="@StatusMapper.MapPaymentStatus(Payment.Status, L)" />
     </div>
 
     <div class="meta-grid">
         <div class="meta-box">
-            <div class="meta-label">Method</div>
+            <div class="meta-label">@L["PaymentSummary_Method"]</div>
             <div class="meta-value">@Payment.Method</div>
         </div>
 
         <div class="meta-box">
-            <div class="meta-label">Amount</div>
+            <div class="meta-label">@L["PaymentSummary_Amount"]</div>
             <div class="meta-value">@UiFormatters.Money(Payment.Amount, Payment.Currency)</div>
         </div>
     </div>
@@ -21,5 +24,5 @@
 
 @code {
     [Parameter, EditorRequired]
-    public SmartParking.Contracts.Payments.PaymentResponse Payment { get; set; } = default!;
+    public PaymentResponse Payment { get; set; } = default!;
 }

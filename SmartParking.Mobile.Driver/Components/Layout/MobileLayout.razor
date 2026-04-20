@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
+@inject NavigationManager Nav
 
 <div>
     <main class="page">
@@ -6,8 +8,17 @@
     </main>
 
     <nav class="bottom-nav">
-        <a href="/search">Search</a>
-        <a href="/driver/bookings">My Bookings</a>
-        <a href="/driver/profile">Profile</a>
+        <a href="/search" class="@GetClass("/search")">@L["Nav_Search"]</a>
+        <a href="/driver/bookings">@L["Nav_Bookings"]</a>
+        <a href="/driver/profile">@L["Nav_Profile"]</a>
     </nav>
 </div>
+
+@code {
+    private string GetClass(string route)
+    {
+        return Nav.Uri.Contains(route, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : "";
+    }
+}

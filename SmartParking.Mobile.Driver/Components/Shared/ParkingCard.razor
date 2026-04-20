@@ -1,51 +1,52 @@
 ﻿
+@inject IStringLocalizer<SmartParking.Mobile.Driver.AppResources> L
 
 <div class="card">
 
-    @* Highlight badges *@
     @if (Item.AvailableCount == 0)
     {
-        <div class="badge-highlight">Full</div>
+        <div class="badge-highlight">@L["ParkingCard_Full"]</div>
     }
     else if (Item.IsBestOption)
     {
-        <div class="badge-highlight">Best option</div>
+        <div class="badge-highlight">@L["ParkingCard_BestOption"]</div>
     }
     else if (Item.IsCheapest)
     {
-        <div class="badge-highlight">Cheapest</div>
+        <div class="badge-highlight">@L["ParkingCard_Cheapest"]</div>
     }
 
     <div class="stack-sm">
         <div class="card-title">@Item.Name</div>
         <div class="muted">@Item.Address</div>
 
-        <StatusBadge Text="@Item.Status" />
+        <StatusBadge Text="@Item.Status"
+                     Label="@StatusMapper.MapParkingStatus(Item.Status, L)" />
     </div>
 
     <div class="meta-grid">
 
         <div class="meta-box">
-            <div class="meta-label">Distance</div>
+            <div class="meta-label">@L["ParkingCard_Distance"]</div>
             <div class="meta-value">@Item.DistanceLabel</div>
         </div>
 
         <div class="meta-box">
-            <div class="meta-label">Available</div>
+            <div class="meta-label">@L["ParkingCard_Available"]</div>
             <div class="meta-value">
                 @Item.AvailableCount / @Item.TotalCapacity
             </div>
         </div>
 
         <div class="meta-box">
-            <div class="meta-label">Rate</div>
+            <div class="meta-label">@L["ParkingCard_Rate"]</div>
             <div class="meta-value">
                 @Item.HourlyRate @Item.Currency
             </div>
         </div>
 
         <div class="meta-box">
-            <div class="meta-label">Estimated</div>
+            <div class="meta-label">@L["ParkingCard_Estimated"]</div>
             <div class="meta-value">
                 @Item.EstimatedPrice @Item.Currency
             </div>
@@ -55,8 +56,8 @@
 
     <div style="margin-top: 14px;">
         <PrimaryButton Text="@ButtonText"
-               Disabled="@IsDisabled"
-               OnClick="OnViewClicked" />
+                       Disabled="@IsDisabled"
+                       OnClick="OnViewClicked" />
     </div>
 
 </div>
@@ -69,11 +70,13 @@
     public EventCallback<Guid> OnView { get; set; }
 
     private string ButtonText => Item.AvailableCount == 0
-    ? "Full"
-    : "View Parking";
+        ? L["ParkingCard_Full"]
+        : L["ParkingCard_ViewParking"];
 
     private bool IsDisabled => Item.AvailableCount == 0;
 
     private Task OnViewClicked()
         => OnView.InvokeAsync(Item.ParkingId);
+
+   
 }
