@@ -240,6 +240,50 @@ Fonctionnalités principales déjà en place :
 
 ---
 
+## Internationalization (i18n)
+
+The mobile application supports full bilingual localization (English / French).
+
+### Key features
+
+- UI localization using `IStringLocalizer`
+- Language switching from Profile page (EN / FR)
+- Persistent language preference using MAUI `Preferences`
+- Culture applied at startup for consistent rendering
+- Fully localized pages and components:
+  - Search
+  - Results
+  - Parking details
+  - Booking & Payment flows
+  - OTP Authentication
+  - Profile
+
+### Domain status localization
+
+Domain statuses returned by the API (e.g. `open`, `pending_payment`) are translated on the client using a centralized `StatusMapper`.
+
+This ensures:
+- consistent translations
+- clean separation between API data and UI labels
+- correct styling via raw status values
+
+### Culture-safe API calls
+
+All API query strings use `InvariantCulture` to avoid issues with:
+- decimal formatting (`,` vs `.`)
+- date serialization
+
+Example fix:
+
+csharp
+request.Latitude.ToString(CultureInfo.InvariantCulture)
+
+This resolves an issue where search results failed under French culture.
+
+Supported languages
+🇬🇧 English (default)
+🇫🇷 French
+
 ## 20. Auteur
 
 Rachid Bariz  
